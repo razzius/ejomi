@@ -60,6 +60,7 @@ class App extends Component {
     ws.onmessage = handleMessage.bind(this)
 
     this.ws = ws
+  }
 
   handleJoin(event) {
     sendMessage(this.ws, {type: 'join', username: this.input.value})
@@ -87,7 +88,7 @@ class App extends Component {
     return (
       <div className="App">
         <div>
-          <h4>Debug actions</h4
+          <h4>Debug actions</h4>
           <input ref={input => {this.input = input}} />
           <button onClick={this.handleJoin.bind(this)}>join</button>
           <button onClick={this.handleStart.bind(this)}>start</button>
