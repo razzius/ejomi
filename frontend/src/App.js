@@ -80,9 +80,9 @@ class App extends Component {
     if (currentPage === PAGES.MESSENGER) {
       pageComponent = <Messenger selectedEmojiIndex={this.state.selectedEmojiIndex} timerSeconds={30} />;
     } else if (currentPage === PAGES.SCRAMBLER) {
-      pageComponent = <Scrambler />; // TODO
+      pageComponent = <Scrambler message={'flagfllagg'}/>;
     } else if (currentPage === PAGES.VOTER) {
-      pageComponent = <Voter />; // TODO
+      pageComponent = <Voter />;
     }
 
     return (
