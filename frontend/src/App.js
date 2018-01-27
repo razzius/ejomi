@@ -16,7 +16,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <Messenger selectedEmojiIndex={this.state.selectedEmojiIndex} lolwut={"hello"} />
+        <Messenger selectedEmojiIndex={this.state.selectedEmojiIndex} timerSeconds={30} />
       </div>
     );
   }

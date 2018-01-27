@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
 
 const MAX_LENGTH = 10;
-const EMOJIS = '😂😄😃😀😊😉😍😘😚😗';
+const EMOJIS = "ABCDEF";//'😂😄😃😀😊😉😍😘😚😗';
+
+function generateForSelectedPos(index, emojis) {
+  return emojis;
+}
 
 class Messenger extends Component {
 
@@ -17,10 +21,6 @@ class Messenger extends Component {
     this.setState({value: event.target.value});
   };
 
-  _generateForSelectedPos(index, emojis) {
-    // emojis.slice()
-  }
-
   render() {
     // const emojis = "ABCDEFG";
     // const selectedEmoji = emojis.charAt(selectedEmojiIndex);
@@ -35,8 +35,7 @@ class Messenger extends Component {
     return (
       <div>
         <p>
-
-          {EMOJIS}
+          {generateForSelectedPos(3, "EMOJIS")}
         </p>
         <form>
           <label>
