@@ -1,5 +1,6 @@
 import json
 import os
+import random
 
 import gevent
 import redis
@@ -24,21 +25,36 @@ pubsub = redis.pubsub()
 pubsub.subscribe(REDIS_CHAN)
 
 
-def send(client, data):
+def send(client, raw_data):
     try:
-        client.send(data['data'])
+        client.send(raw_data)
     except Exception:
         app.logger.exception('Failed to send to client, removing from pool')
         del clients[client]
 
 
-def send_message_to_all_clients():
+def publish_redis_messages_to_clients():
     for message in pubsub.listen():
-        for client in clients.keys():
-            gevent.spawn(send, client, message)
+        print(f'publish message {message}')
+
+        if message['type'] == 'message':
+            data = json.loads(message['data'])
+
+            if '_user_id' in data:
+                print(f'Sending to {data["_user_id"]}')
+                # race condition: user disconnects
+                user = [user for user in clients.keys() if id(user) == data['_user_id']][0]
+
+                gevent.spawn(send, user, json.dumps(data).encode())
+            else:
+                for client in clients.keys():
+                    gevent.spawn(send, client, message['data'])
+
+        else:
+            print(f'Redis gave informative message {message}')
 
 
-gevent.spawn(send_message_to_all_clients)
+gevent.spawn(publish_redis_messages_to_clients)
 
 
 @app.route('/')
@@ -47,6 +63,7 @@ def index():
 
 
 def emoji_string(n):
+    # TODO ensure distinct emoji
     return ''.join(random_emoji()[0] for _ in range(n))
 
 
@@ -61,27 +78,53 @@ def handle_message(ws, data):
         })
     elif data['type'] == 'start':
         s = emoji_string(10)
-        print(s)
+
+        print(f'Starting game with string {s} and {len(clients)} clients')
+
         notify_all({
             'type': 'start',
             'emoji': s
+        })
+
+        # TODO keep track of this user being messenger
+        print(f'Clients: {clients}')
+
+        messenger_user = random.choice(list(clients.keys()))
+
+        notify_user(messenger_user, {
+            'type': 'messenger',
+            'goal': random.choice(s)
         })
     else:
         raise Exception('Unknown event {}'.format(data))
 
 
 def notify_all(data):
-    redis.publish(REDIS_CHAN, json.dumps(data).encode())
+    redis.publish(REDIS_CHAN, json.dumps(data))
+
+
+def notify_user(ws, data):
+    # janky
+    data['_user_id'] = id(ws)
+    redis.publish(REDIS_CHAN, json.dumps(data))
 
 
 @sockets.route('/socket')
 def handle_websocket(ws):
     clients[ws] = {'username': None}
 
+    message = {
+        'type': 'welcome',
+        '_user_id': id(ws)
+    }
+
+    notify_user(ws, message)
+
     while not ws.closed:
         message = ws.receive()
         if message is None:
             print('Got none message')
+            del clients[ws]
         else:
             data = json.loads(message)
 
