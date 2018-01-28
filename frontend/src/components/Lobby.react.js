@@ -17,7 +17,7 @@ class Lobby extends Component {
     const isCurrentUser = name === this.state.currentUser;
     const fontWeight = isCurrentUser ? "bold" : "normal"
     const style = { color: colorHex,
-                    "font-weight": fontWeight}
+                    fontWeight: fontWeight}
     return <p className="userInList" key={name} style={style}>{name}</p>;
   }
 
