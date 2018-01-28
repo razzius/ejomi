@@ -2,12 +2,14 @@ import React, { Component } from 'react';
 import ReconnectingWebsocket from 'reconnecting-websocket'
 
 import './App.css';
+import Lobby from './components/Lobby.react';
 import Messenger from './components/Messenger.react';
 import Scrambler from './components/Scrambler.react';
 import Voter from './components/Voter.react';
 import EmojiBoard from './components/EmojiBoard.react';
 
 const PAGES = {
+  LOBBY: 'LOBBY',
   MESSENGER: 'MESSENGER',
   SCRAMBLER: 'SCRAMBLER',
   VOTER: 'VOTER',
@@ -80,7 +82,9 @@ class App extends Component {
     } = this.state;
 
     let pageComponent = null;
-    if (currentPage === PAGES.MESSENGER) {
+    if (currentPage === PAGES.LOBBY) {
+      pageComponent = <Lobby userList={["hi", "dude", "how ", " you ", " doing"]}/>;
+    } else if (currentPage === PAGES.MESSENGER) {
       pageComponent = <Messenger selectedEmojiIndex={this.state.selectedEmojiIndex} timerSeconds={30} />;
     } else if (currentPage === PAGES.SCRAMBLER) {
       pageComponent = <Scrambler message={'flagfllagg'}/>;
