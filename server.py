@@ -1,6 +1,9 @@
 import json
 import os
 import random
+import classes.GameInstance
+import classes.Guess
+import classes.Player
 
 import gevent
 import redis
@@ -118,6 +121,7 @@ def emoji_list(n):
 
 def handle_message(client, data):
     if data['type'] == 'join':
+
         username = data['username']
         clients[client]['username'] = username
 
