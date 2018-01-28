@@ -2,7 +2,7 @@ from enum import Enum
 import json
 import os
 import random
-from Models import GameInstance, Guess, Player
+from Models import GameInstance, Player
 
 import gevent
 import redis
@@ -145,15 +145,19 @@ def broadcast_state():
         'current_stage': current_stage.name,
         'type': 'state_update',
         'games': {k: v.to_dict() for (k, v) in game_instances.items()},
-        'users': {id(client): player.to_dict() for (client, player) in players.items()}
+        'users': {client_id: player.to_dict() for (client_id, player) in players.items()}
     })
 
+def get_client_id(client):
+    return clients[client]['id']
+
 def handle_message(client, data):
-    print(f'handle_message({client}, {data})')
+    client_id = get_client_id(client)
+    print(f'handle_message({client_id}, {data})')
 
     if data['type'] == 'join':
         player = Player(client, data['username'])
-        players[id(client)] = player
+        players[client_id] = player
         broadcast_state()
 
     elif data['type'] == 'start':
@@ -180,9 +184,9 @@ def handle_message(client, data):
     # The clue that the hinter suggests
     elif data['type'] == 'hint':
         hint = validate(data['hint'])
-        print(f'Received hint:{hint} from {clients[client]["username"]}')
+        print(f'Received hint:{hint} from {client_id}')
 
-        game = next(game for game in game_instances if game.messenger_id == id(client))
+        game = next(game for game in game_instances.values() if game.messenger_id == client_id)
         game.message = hint
 
     # The scrambled hint
@@ -190,12 +194,12 @@ def handle_message(client, data):
         scrambled_hint = data['scrambled_hint']
         print(f'Received scrambled_hint:{scrambled_hint} from {clients[client]["username"]}')
 
-        game = next(game for game in game_instances if game.scrambler_id == id(client))
+        game = next(game for game in game_instances.values() if game.scrambler_id == client_id)
         game.scrambled_message = scrambled_hint
 
     elif data['type'] == 'guess':
         guess = data['guess']
-        clients[client]['guess'][round_number] = guess
+        # clients[client]['guess'][round_number] = guess
 
         print(f'Received guess:{guess} from {clients[client]["username"]}')
 
@@ -217,21 +221,23 @@ def notify_all(data):
 
 def notify_user(client, data):
     # janky
-    data['_user_id'] = id(client)
+    data['_user_id'] = get_client_id(client)
     redis.publish(REDIS_CHAN, json.dumps(data))
 
 @sockets.route('/socket')
 def handle_websocket(client):
-    print(f'Got connection from {id(client)}')
+    client_id = id(client)
+    print(f'Got connection from {client_id}')
 
     clients[client] = {
+        'id': client_id,
         'username': None,
         'guess': {}
     }
 
     message = {
         'type': 'welcome',
-        '_user_id': id(client)
+        '_user_id': client_id,
     }
 
     broadcast_state()
@@ -241,7 +247,7 @@ def handle_websocket(client):
     while not client.closed:
         message = client.receive()
         if message is None:
-            print(f'Got none message, closing {id(client)}')
+            print(f'Got none message, closing {client_id}')
             del clients[client]
         else:
             data = json.loads(message)
