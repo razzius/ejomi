@@ -6,6 +6,7 @@ import Messenger from './Messenger.react';
 import Scrambler from './components/Scrambler.react';
 import Voter from './components/Voter.react';
 import EmojiBoard from './components/EmojiBoard.react';
+import Message from './components/Message.react';
 
 const PAGES = {
   MESSENGER: 'MESSENGER',
@@ -85,7 +86,7 @@ class App extends Component {
     } else if (currentPage === PAGES.SCRAMBLER) {
       pageComponent = <Scrambler message={'flagfllagg'}/>;
     } else if (currentPage === PAGES.VOTER) {
-      pageComponent = <Voter scrambledMessage={'wagwagfrog'} />;
+      pageComponent = <Voter scrambledMessage={'w'} />;
     }
 
     const array = ['😂','😄','😃','😀','😊','😉','😍','😘','😚','😗' ];
