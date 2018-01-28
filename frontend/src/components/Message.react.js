@@ -24,13 +24,14 @@ class Message extends Component {
       this.alpha = 1;
     }
 
-    this.text = ['a', 'a', 'b', 'c', 'd' ,'e', 'f', 'g', 'h']
-    this.text_i = 0;
+    this.originalLetter = 'a';
+    this.scrambledLetter = 'b';
 
-    let positions = this.getPositions(this.text[this.text_i])
+    let positions = this.getPositions(this.scrambledLetter)
     this.setPositions(this.particles, positions)
 
-    this.drawToNewPositions()
+    this.displayText(this.scrambledLetter);
+    setTimeout(this.drawToNewPositions, 2000);
   }
 
   startTransitionDraw() {
@@ -42,13 +43,17 @@ class Message extends Component {
 
   stopTransitionDraw() {
     clearInterval(this.drawTimer);
+    this.displayText(this.originalLetter);
+    //setTimeout(this.drawToNewPositions, 2000);
+  }
+
+  displayText(text) {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
     this.ctx.fillStyle = "black";
     this.ctx.font = "60pt verdana";
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "bottom";
-    this.ctx.fillText(this.text[this.text_i%9], 30, 100);
-    setTimeout(this.drawToNewPositions, 2000);
+    this.ctx.fillText(text, 30, 100);
   }
 
   draw() {
@@ -127,8 +132,7 @@ class Message extends Component {
   }
 
   drawToNewPositions = () => {
-    this.text_i = this.text_i + 1
-    const text = this.text[this.text_i%9]
+    const text = this.originalLetter;
     let positions = this.getPositions(text)
 
     for (let i = 0; i < this.particles.length; i++) {
