@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
-import './EmojiBoard.css';
 
 function EmojiCell(props) {
+  const classNames = "emojiCell" + (props.selected ? " selected" : "")
   return (
-    <div onClick={props.onClick}>
-      {props.selected ? '[ ' : ''}{props.value}{props.selected ? ' ]' : ''}
+    <div onClick={props.onClick}
+      className = {classNames}>
+      {props.value}
     </div>
   );
 }
@@ -31,7 +32,7 @@ class EmojiBoard extends Component {
     );
 
     return (
-      <div className="EmojiBoard">
+      <div className="board">
         {emojis}
       </div>
     );
