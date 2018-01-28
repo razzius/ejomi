@@ -12,6 +12,8 @@ const PAGES = {
   VOTER: 'VOTER',
 };
 
+const DEFAULT_PAGE = PAGES.VOTER;
+
 const host = 'localhost:8000'
 
 function getWsProtocol() {
@@ -50,7 +52,7 @@ class App extends Component {
     super(props);
 
     this.state = {
-      currentPage: PAGES.MESSENGER,
+      currentPage: DEFAULT_PAGE,
       selectedEmojiIndex: 5,
     };
 
@@ -82,7 +84,7 @@ class App extends Component {
     } else if (currentPage === PAGES.SCRAMBLER) {
       pageComponent = <Scrambler message={'flagfllagg'}/>;
     } else if (currentPage === PAGES.VOTER) {
-      pageComponent = <Voter />;
+      pageComponent = <Voter scrambledMessage={'wagwagfrog'} />;
     }
 
     return (
