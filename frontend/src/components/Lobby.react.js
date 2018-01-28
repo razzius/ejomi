@@ -40,7 +40,7 @@ class Lobby extends Component {
           type="text"
           ref={input => {this.input = input;}}
           className="inputBox"
-          placeholder="Payler naem gose here"
+          placeholder="Player Name"
         />
         <button type="submit" className="inputButton">Join</button>
       </form> : null;
@@ -58,9 +58,11 @@ class Lobby extends Component {
         <EmojiHaiku/>
         {inputForm}
         {startButton}
-        <h5>{playerMessage} </h5>
-        {this.props.userList.sort((name) => { return name === this.state.currentUser ? -1: 1;})
-          .map(this._renderName)}
+        <h5 className="playerMessage">{playerMessage} </h5>
+        <div className="userList" >
+            {this.props.userList.sort((name) => { return name === this.state.currentUser ? -1: 1;})
+            .map(this._renderName)}
+          </div>
       </div>
     );
   }
