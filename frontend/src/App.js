@@ -121,6 +121,12 @@ class App extends Component {
     );
   }
 
+  _getGameByScrambler = (scrambler_id) => {
+    return Object.values(this.state.games).find(game =>
+      game.scrambler_id === scrambler_id
+    );
+  }
+
   render() {
     console.log("State: ", this.state);
     const {
@@ -129,7 +135,6 @@ class App extends Component {
       userId,
       users,
     } = this.state;
-
 
     let pageComponent = null;
     if (currentStage === PAGES.LOBBY) {
@@ -143,9 +148,10 @@ class App extends Component {
             showStart = {Object.keys(users).length > 2}
           />
         </div>;
+    } else if (!(userId in users)) {
+      pageComponent = <p>Game in progress. Please wait until the next round.</p>;
     } else if (currentStage === PAGES.MESSENGER) {
       const game = this._getGameByMessenger(userId);
-      console.log("found game", game);
       pageComponent =
         <Messenger
           emojiList={game.emoji_board}
@@ -155,7 +161,8 @@ class App extends Component {
           characterLimit={10}
         />;
     } else if (currentStage === PAGES.SCRAMBLER) {
-      pageComponent = <Scrambler message={'flagfllagg'}/>;
+      const game = this._getGameByScrambler(userId);
+      pageComponent = <Scrambler message={game.message}/>;
     } else if (currentStage === PAGES.VOTER) {
       pageComponent = (
         <Voter
