@@ -9,50 +9,46 @@ class Message extends Component {
   }
 
   componentDidMount() {
-    const canvas = this.refs.canvas
-    this.ctx = canvas.getContext("2d")
-    this.W = canvas.width;
-    this.H = canvas.height;
+    this.canvas = this.refs.canvas
+    this.ctx = this.canvas.getContext("2d")
+    this.W = this.canvas.width;
+    this.H = this.canvas.height;
 
-    this.ctx.fillText(this.props.text, 210, 75)
-
-    const total_area = this.W * this.H;
     const total_particles = 500;
-    const single_particle_area = total_area / total_particles;
-    const area_length = Math.sqrt(single_particle_area);
-
     this.particles = [];
     for (let i = 1; i <= total_particles; i++) {
-        this.particles.push(new particle(i, this.W, this.H));
+        this.particles.push(new particle());
     }
 
-    function particle(i, W, H) {
-      this.r = Math.round(Math.random() * 255|0);
-      this.g = Math.round(Math.random() * 255|0);
-      this.b = Math.round(Math.random() * 255|0);
+    function particle() {
       this.alpha = 1;
-
-      this.x = (i * area_length) % W;
-      this.y = (i * area_length) / W * area_length;
-
-      this.deltaOffset = 0;
-
-      this.radius = 0.1 + Math.random() * 2;
     }
 
     this.text = ['a', 'a', 'b', 'c', 'd' ,'e', 'f', 'g', 'h']
     this.text_i = 0;
-    this.new_positions()
 
+    let positions = this.getPositions(this.text[this.text_i])
+    this.setPositions(this.particles, positions)
+
+    this.drawToNewPositions()
+  }
+
+  startTransitionDraw() {
     this.drawTimer= setInterval(
       () => this.draw(),
-      60
+      50
     );
+  }
 
-    this.changeTextTimer = setInterval(
-      () => this.new_positions(),
-      3000
-    )
+  stopTransitionDraw() {
+    clearInterval(this.drawTimer);
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+    this.ctx.fillStyle = "black";
+    this.ctx.font = "60pt verdana";
+    this.ctx.textAlign = "center";
+    this.ctx.textBaseline = "bottom";
+    this.ctx.fillText(this.text[this.text_i%9], 30, 100);
+    setTimeout(this.drawToNewPositions, 2000);
   }
 
   draw() {
@@ -62,6 +58,7 @@ class Message extends Component {
     this.ctx.fillRect(0, 0, this.W, this.H)
 
     const particles = this.particles;
+    this.still_drawing = false;
     for (let i = 0; i < particles.length; i++) {
 
       let p = particles[i];
@@ -69,25 +66,23 @@ class Message extends Component {
       if (isNaN(p.x)) continue
       
       this.ctx.beginPath();
-      this.ctx.fillStyle = "rgb(" + p.r + ", " + p.g + ", " + p.b + ")";
-      this.ctx.fillStyle = "rgba(" + p.r + ", " + p.g + ", " + p.b + ", " + p.alpha + ")";
-      let mod = 1;
-      let offset = 0;
-      var radius = 6 * p.radius;
-
-      this.ctx.arc(offset + p.x, offset + p.y, 1, Math.PI * 2, false);
+      this.ctx.fillStyle = "rgba(0, 0, 0, " + p.alpha + ")";
+      this.ctx.arc(p.x, p.y, 1, Math.PI * 2, false);
       this.ctx.fill();
 
-      p.x += (p.dx - p.x) / 10;
-      p.y += (p.dy - p.y) / 10;
+      p.x += (p.dx - p.x) / 5;
+      p.y += (p.dy - p.y) / 5;
+
+      if (p.dx - p.x > 1 && p.dy - p.y > 1){
+        this.still_drawing = true;
+      }
+    }
+    if(!this.still_drawing){
+      this.stopTransitionDraw();
     }
   }
 
-  new_positions() {
-
-    let text = this.text[this.text_i%9]
-    this.text_i = this.text_i + 1
-
+  getPositions(text) {
     const tcanvas = this.refs.tcanvas;
     const tctx = tcanvas.getContext("2d");
     tcanvas.width = this.W;
@@ -98,7 +93,9 @@ class Message extends Component {
 
     tctx.fillStyle = "black";
     tctx.font = "60pt verdana";
-    tctx.fillText(text, 10, 60);
+    tctx.textAlign = "center";
+    tctx.textBaseline = "bottom";
+    tctx.fillText(text, 30, 100);
 
     const image_data = tctx.getImageData(0, 0, this.W, this.H);
     const pixels = image_data.data;
@@ -112,10 +109,23 @@ class Message extends Component {
         positions.push(position);
       }
     }
-
-    console.log(positions)
-
     this.shuffle(positions);
+    return positions;
+  }
+
+  setPositions(particles, positions) {
+    for (let i = 0; i < particles.length; i++) {
+      if( i < positions.length){ 
+        particles[i].x = positions[i].x;
+        particles[i].y = positions[i].y;
+      }
+    }
+  }
+
+  drawToNewPositions = () => {
+    this.text_i = this.text_i + 1
+    const text = this.text[this.text_i%9]
+    let positions = this.getPositions(text)
 
     for (let i = 0; i < this.particles.length; i++) {
       if( i < positions.length){ 
@@ -123,6 +133,8 @@ class Message extends Component {
         this.particles[i].dy = positions[i].y;
       }
     }
+
+    this.startTransitionDraw()
   }
 
   shuffle(a) {
@@ -134,13 +146,11 @@ class Message extends Component {
     }
   }
 
-
   render () {
-
     return (
       <div>
-        <canvas ref="canvas" width="1000" height="200"></canvas>
-        <canvas ref="tcanvas" width="1000" height="200"></canvas>
+        <canvas ref="canvas" width="60" height="100"></canvas>
+        <canvas ref="tcanvas" width="60" height="100"></canvas>
       </div>
     );
   }
