@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import TextInput from './TextInput.react';
 
 // props: message
 class Scrambler extends Component {
@@ -16,18 +17,12 @@ class Scrambler extends Component {
   };
 
   render() {
+    const message = this.props.message;
     return (
       <div>
-        <p>
-          Original message: {this.props.message}
-        </p>
-        <form>
-          <label>
-            Your scramble:
-            <input type="text" name="name" value={this.state.value} onChange={this._onChange} />
-          </label>
-          <input type="submit" value="Submit" />
-        </form>
+        <p>Original message: {message}</p>
+        <p>Your scramble:</p>
+        <TextInput referenceString={message} />
       </div>
     );
   }
