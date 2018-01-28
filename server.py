@@ -153,7 +153,8 @@ def handle_message(client, data):
         gevent.spawn(start_game_timer)
 
     # The clue that the hinter suggests
-    elif data['type'] == 'hint':
+    elif data['type'] == '
+    ':
         hint = data['hint']
         print(f'Received hint:{hint} from {clients[client]["username"]}')
 
