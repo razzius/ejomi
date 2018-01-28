@@ -36,7 +36,7 @@ class Message extends Component {
   startTransitionDraw() {
     this.drawTimer= setInterval(
       () => this.draw(),
-      50
+      30
     );
   }
 
@@ -58,11 +58,13 @@ class Message extends Component {
     this.ctx.fillRect(0, 0, this.W, this.H)
 
     const particles = this.particles;
-    this.still_drawing = false;
+    this.still_drawing = true;
     for (let i = 0; i < particles.length; i++) {
 
       let p = particles[i];
 
+      p.x += ((p.target_x - p.orig_x) / 20);
+      p.y += ((p.target_y - p.orig_y) / 20);
       if (isNaN(p.x)) continue
       
       this.ctx.beginPath();
@@ -70,14 +72,14 @@ class Message extends Component {
       this.ctx.arc(p.x, p.y, 1, Math.PI * 2, false);
       this.ctx.fill();
 
-      p.x += (p.dx - p.x) / 5;
-      p.y += (p.dy - p.y) / 5;
-
-      if (p.dx - p.x > 1 && p.dy - p.y > 1){
-        this.still_drawing = true;
-      }
     }
-    if(!this.still_drawing){
+    this.transition_draw_step = this.transition_draw_step + 1;
+    if(this.transition_draw_step >= 20){
+      for (let i = 0; i < particles.length; i++){
+        particles[i].orig_x = particles[i].target_x;
+        particles[i].orig_y = particles[i].target_y;
+
+      }
       this.stopTransitionDraw();
     }
   }
@@ -116,6 +118,8 @@ class Message extends Component {
   setPositions(particles, positions) {
     for (let i = 0; i < particles.length; i++) {
       if( i < positions.length){ 
+        particles[i].orig_x = positions[i].x;
+        particles[i].orig_y = positions[i].y;
         particles[i].x = positions[i].x;
         particles[i].y = positions[i].y;
       }
@@ -129,11 +133,12 @@ class Message extends Component {
 
     for (let i = 0; i < this.particles.length; i++) {
       if( i < positions.length){ 
-        this.particles[i].dx = positions[i].x;
-        this.particles[i].dy = positions[i].y;
+        this.particles[i].target_x = positions[i].x;
+        this.particles[i].target_y = positions[i].y;
       }
     }
 
+    this.transition_draw_step = 0;
     this.startTransitionDraw()
   }
 
