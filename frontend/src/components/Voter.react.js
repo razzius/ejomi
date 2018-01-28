@@ -23,7 +23,7 @@ class Voter extends Component {
         <EmojiBoard
           emojiList={this.props.emojiList}
           onEmojiClick={this._onEmojiClick}
-          messageIndex={this.state.selectedEmojiIndex}
+          goalEmojiIndex={this.state.selectedEmojiIndex}
         />
         <Clock timerSeconds={this.props.timerSeconds} />
       </div>
