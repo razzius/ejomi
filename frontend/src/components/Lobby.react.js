@@ -54,7 +54,8 @@ class Lobby extends Component {
         {inputForm}
         {startButton}
         <h5>Users:</h5>
-        {this.props.userList.map(this._renderName)}
+        {this.props.userList.sort((name) => { return name === this.state.currentUser ? -1: 1;})
+          .map(this._renderName)}
       </div>
     );
   }

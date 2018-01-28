@@ -119,7 +119,6 @@ class App extends Component {
       pageComponent =
         <div>
           <p>userId: {userId}</p>
-          <h5>Users:</h5>
           <Lobby
             userList = {users}
             onJoin = {this.handleJoin.bind(this)}
