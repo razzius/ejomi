@@ -19,7 +19,7 @@ class TextInput extends Component {
     super(props);
 
     this.state = {
-      value: props.referenceString,
+      value: props.referenceString || '',
       maxSize: 10,
       maxEditDistance: 4
     };
