@@ -199,12 +199,7 @@ class App extends Component {
         />
       );
     } else if (currentStage === PAGES.REVEALER) {
-      const game = {
-        message: "hi",
-        scrambled_message: "hiid",
-        goal_index: 1,
-        emoji_board: ['A','B','C','D']
-      }
+      const game = games[currentVote];
       pageComponent = (
         <Revealer
           goalEmojiIndex={game.goal_index}

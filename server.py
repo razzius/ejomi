@@ -34,7 +34,7 @@ class Stages(Enum):
     MESSENGER = 'MESSENGER'
     SCRAMBLER = 'SCRAMBLER'
     VOTER = 'VOTER'
-    RESULTS = 'RESULTS'
+    REVEALER = 'REVEALER'
 
 # Global State
 clients = {}
@@ -134,7 +134,8 @@ def start_game_timer():
         current_vote = game_id
         broadcast_state()
         gevent.sleep(10)
-        # current_stage = Stages.RESULTS
+        current_stage = Stages.REVEALER
+        gevent.sleep(10)
 
 
     reset_game()
