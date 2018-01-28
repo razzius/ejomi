@@ -1,7 +1,7 @@
 import json
 import os
 import random
-from Models import *
+from Models import GameInstance, Guess, Player
 
 import gevent
 import redis
@@ -23,7 +23,7 @@ redis = redis.from_url(REDIS_URL)
 # Global State
 current_round = 0
 clients = {}
-game_instances = []
+game_instances = {}
 players = {}
 
 pubsub = redis.pubsub()
@@ -126,10 +126,13 @@ def make_emoji_list(n):
 def broadcast_state():
     notify_all({
         'type': 'state_update',
+        'games': {k: v.to_dict() for (k, v) in game_instances.items()},
         'users': {id(client): player.to_dict() for (client, player) in players.items()}
     })
 
 def handle_message(client, data):
+    print(f'handle_message({client}, {data})')
+
     if data['type'] == 'join':
         player = Player(client, data['username'])
         players[id(client)] = player
@@ -141,22 +144,21 @@ def handle_message(client, data):
 
         player_ids = list(players.keys())
         derangement = list(player_ids)
-        while any(x == y for (x,y) in zip(player_ids, derangement)):
+        while any(x == y for (x, y) in zip(player_ids, derangement)):
             random.shuffle(derangement)
 
         for ((messenger_id, player), scrambler_id) in zip(players.items(), derangement):
-            emojis = make_emoji_list(n)
-            game = GameInstance(emojis, messenger_id, scrambler_id)
+            emojis = make_emoji_list(10)
+            game_instance = GameInstance(emojis, messenger_id, scrambler_id)
+            game_instances[id(game_instance)] = game_instance
 
+            print(f'Starting game {game_instance.to_dict()}')
 
-        # s = emoji_list(10)
-        #
-        # print(f'Starting game with string {s} and {len(clients)} clients')
-        #
-        # notify_all({
-        #     'type': 'start',
-        #     'emoji': s,
-        # })
+        broadcast_state()
+
+        notify_all({
+            'type': 'start',
+        })
         #
         # # TODO keep track of this user being messenger
         # print(f'Clients: {clients}')

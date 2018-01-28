@@ -15,6 +15,8 @@ const PAGES = {
 };
 
 const DEFAULT_PAGE = PAGES.LOBBY;
+// print extra logging
+const DEBUG_MODE = false;
 
 const host = 'localhost:8000'
 
@@ -31,7 +33,9 @@ function sendMessage(ws, message) {
 }
 
 function handleMessage(message) {
-  console.log("onmessage", message);
+  if (DEBUG_MODE) {
+    console.log("onmessage", message);
+  }
   const reader = new FileReader()
 
   reader.onload = () => {
@@ -48,8 +52,9 @@ function handleMessage(message) {
       this.setState({
         userId: data._user_id,
       });
-    } else if (data.type === 'update_users') {
+    } else if (data.type === 'state_update') {
       this.setState({
+        games: data.games,
         users: data.users,
       });
     } else if (data.type === 'messenger') {
@@ -70,22 +75,25 @@ class App extends Component {
     this.state = {
       currentPage: DEFAULT_PAGE,
       emoji: ['😂','😄','😃','😀','😊','😉','😍','😘','😚','😗'],
+      games: {},
       goalEmojiIndex: 5,
       userId: -1,
-      users: [],
+      users: {},
     };
 
     const protocol = getWsProtocol()
 
     const ws = new ReconnectingWebsocket(`${protocol}${host}/socket`);
     ws.onmessage = handleMessage.bind(this);
-    ws.onopen = (e) => {
-      console.log("opened", e);
+    if (DEBUG_MODE) {
+      ws.onopen = (e) => {
+        console.log("opened", e);
+      }
+      ws.onclose = (e) => {
+        console.log("closed", e);
+      }
+      ws.debug = true;
     }
-    ws.onclose = (e) => {
-      console.log("closed", e);
-    }
-    ws.debug = true;
 
     this.ws = ws
   }
@@ -111,15 +119,21 @@ class App extends Component {
     });
   }
 
+  _getGameByMessenger = (messenger_id) => {
+    return Object.values(this.state.games).find(game =>
+      game.messenger_id === messenger_id
+    );
+  }
+
   render() {
     console.log("State: ", this.state);
     const {
       currentPage,
       emoji,
-      goalEmojiIndex,
       userId,
       users,
     } = this.state;
+
 
     let pageComponent = null;
     if (currentPage === PAGES.LOBBY) {
@@ -127,18 +141,20 @@ class App extends Component {
         <div>
           <p>userId: {userId}</p>
           <Lobby
-            userList = {users}
+            userList = {Object.values(users).map(user => user.username)}
             onJoin = {this.handleJoin.bind(this)}
             onStart = {this.handleStart.bind(this)}
             showStart = {true}
           />
         </div>;
     } else if (currentPage === PAGES.MESSENGER) {
+      const game = this._getGameByMessenger(userId);
+      console.log("found game", game);
       pageComponent =
         <Messenger
-          emojiList={emoji}
+          emojiList={game.emoji_board}
           onSubmit={this._onSubmitHint}
-          selectedEmojiIndex={goalEmojiIndex}
+          selectedEmojiIndex={game.goal_index}
           timerSeconds={30}
           characterLimit={10}
         />;
