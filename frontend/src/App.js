@@ -6,7 +6,6 @@ import Lobby from './components/Lobby.react';
 import Messenger from './components/Messenger.react';
 import Scrambler from './components/Scrambler.react';
 import Voter from './components/Voter.react';
-import EmojiBoard from './components/EmojiBoard.react';
 
 const PAGES = {
   LOBBY: 'LOBBY',
@@ -15,7 +14,7 @@ const PAGES = {
   VOTER: 'VOTER',
 };
 
-const DEFAULT_PAGE = PAGES.VOTER;
+const DEFAULT_PAGE = PAGES.LOBBY;
 
 const host = 'localhost:8000'
 
@@ -81,18 +80,29 @@ class App extends Component {
       selectedEmojiIndex,
     } = this.state;
 
+    // TODO: get from server
+    const EMOJIS = ['😂','😄','😃','😀','😊','😉','😍','😘','😚','😗' ];
+
     let pageComponent = null;
     if (currentPage === PAGES.LOBBY) {
       pageComponent = <Lobby userList={["hi", "dude", "how ", " you ", " doing"]}/>;
     } else if (currentPage === PAGES.MESSENGER) {
-      pageComponent = <Messenger selectedEmojiIndex={this.state.selectedEmojiIndex} timerSeconds={30} />;
+      pageComponent =
+        <Messenger
+          emojiList={EMOJIS}
+          selectedEmojiIndex={selectedEmojiIndex}
+          timerSeconds={30}
+        />;
     } else if (currentPage === PAGES.SCRAMBLER) {
       pageComponent = <Scrambler message={'flagfllagg'}/>;
     } else if (currentPage === PAGES.VOTER) {
-      pageComponent = <Voter scrambledMessage={'wagwagfrog'} />;
+      pageComponent = (
+        <Voter
+          emojiList={EMOJIS}
+          scrambledMessage={'wagwagfrog'}
+        />
+      );
     }
-
-    const array = ['😂','😄','😃','😀','😊','😉','😍','😘','😚','😗' ];
 
     return (
       <div className="App">
@@ -107,7 +117,6 @@ class App extends Component {
           Current Page: {currentPage}
         </p>
         {pageComponent}
-        <EmojiBoard messageIndex={1} emojiList={array} counterIndex={4} />
       </div>
     );
   }
