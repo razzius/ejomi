@@ -50,7 +50,7 @@ class Lobby extends Component {
     </div> : null;
 
 
-    const numberPlayers = this.props.userList.length + (this.props.userList.length == 1 ? " Player in Lobby" :" Players in Lobby: ");
+    const numberPlayers = this.props.userList.length + (this.props.userList.length == 1 ? " Player in Lobby:" :" Players in Lobby:");
     const header = <h5> {numberPlayers} </h5>
 
     return (
