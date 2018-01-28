@@ -2,12 +2,26 @@ import React, { Component } from 'react';
 
 function EmojiCell(props) {
   const classNames = "emojiCell" + (props.selected ? " selected" : "")
+  const voterNames = getVoterNames(props)
   return (
     <div onClick={props.onClick}
       className = {classNames}>
       {props.value}
     </div>
   );
+}
+
+
+function getVoterNames(props) {
+  const voterNames = []
+  console.log(props.votes);
+  for (let vote in props.votes) {
+    console.log(vote);
+    if (vote.selectedEmojiIndex === props.index) {
+      voterNames.push(props.users[vote.userId].username)
+    }
+  }
+  return voterNames;
 }
 
 class EmojiBoard extends Component {
@@ -25,6 +39,9 @@ class EmojiBoard extends Component {
         key={emoji.toString() + goalEmojiIndex}
         selected={goalEmojiIndex === index}
         value={emoji}
+        votes={this.props.votes}
+        users={this.props.users}
+        index={index}
       />
     );
 

@@ -206,6 +206,8 @@ class App extends Component {
           emojiList={game.emoji_board}
           originalMessage={game.message}
           scrambledMessage={game.scrambled_message}
+          votes={game.votes}
+          users={this.state.users}
         />
       );
     }

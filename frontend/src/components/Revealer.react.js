@@ -15,7 +15,8 @@ class Revealer extends Component {
         <EmojiBoard
           goalEmojiIndex={this.props.goalEmojiIndex}
           emojiList={this.props.emojiList}
-          votes= {this.props.votes}
+          votes={this.props.votes}
+          users={this.props.users}
            />
       <p> Original </p>
       <p> {this.props.originalMessage} </p>
