@@ -5,6 +5,7 @@ import './App.css';
 import Messenger from './Messenger.react';
 import Scrambler from './components/Scrambler.react';
 import Voter from './components/Voter.react';
+import EmojiBoard from './components/EmojiBoard.react';
 
 const PAGES = {
   MESSENGER: 'MESSENGER',
@@ -83,7 +84,10 @@ class App extends Component {
       pageComponent = <Scrambler message={'flagfllagg'}/>;
     } else if (currentPage === PAGES.VOTER) {
       pageComponent = <Voter />;
+
     }
+
+    const array = ['😂','😄','😃','😀','😊','😉','😍','😘','😚','😗' ];
 
     return (
       <div className="App">
@@ -98,6 +102,7 @@ class App extends Component {
           Current Page: {currentPage}
         </p>
         {pageComponent}
+        <EmojiBoard messageIndex={1} emojiList={array} counterIndex={4} />
       </div>
     );
   }
