@@ -36,12 +36,13 @@ function handleMessage(message) {
   reader.onload = () => {
     const data = JSON.parse(reader.result)
 
-    console.log(`Received ${JSON.stringify(data)}`)
+    console.log('Received', data);
 
-    if (data.type === 'receive_emoji') {
-      var updatedState = this.state
-      updatedState['emoji'] = message.emoji
-      this.setState(updatedState)
+    if (data.type === 'start') {
+      this.setState({
+        currentPage: PAGES.MESSENGER,
+        emoji: data.emoji,
+      });
     }
   }
 
@@ -55,6 +56,7 @@ class App extends Component {
 
     this.state = {
       currentPage: DEFAULT_PAGE,
+      emoji: ['😂','😄','😃','😀','😊','😉','😍','😘','😚','😗'],
       selectedEmojiIndex: 5,
     };
 
@@ -75,13 +77,12 @@ class App extends Component {
   }
 
   render() {
+    console.log("State: ", this.state);
     const {
       currentPage,
+      emoji,
       selectedEmojiIndex,
     } = this.state;
-
-    // TODO: get from server
-    const EMOJIS = ['😂','😄','😃','😀','😊','😉','😍','😘','😚','😗' ];
 
     let pageComponent = null;
     if (currentPage === PAGES.LOBBY) {
@@ -89,7 +90,7 @@ class App extends Component {
     } else if (currentPage === PAGES.MESSENGER) {
       pageComponent =
         <Messenger
-          emojiList={EMOJIS}
+          emojiList={emoji}
           selectedEmojiIndex={selectedEmojiIndex}
           timerSeconds={30}
         />;
@@ -98,7 +99,7 @@ class App extends Component {
     } else if (currentPage === PAGES.VOTER) {
       pageComponent = (
         <Voter
-          emojiList={EMOJIS}
+          emojiList={emoji}
           scrambledMessage={'wagwagfrog'}
         />
       );
@@ -111,7 +112,6 @@ class App extends Component {
           <input ref={input => {this.input = input}} />
           <button onClick={this.handleJoin.bind(this)}>join</button>
           <button onClick={this.handleStart.bind(this)}>start</button>
-          <div>{this.emoji}</div>
         </div>
         <p>
           Current Page: {currentPage}

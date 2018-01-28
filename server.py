@@ -112,6 +112,9 @@ def emoji_string(n):
     # TODO ensure distinct emoji
     return ''.join(random_emoji()[0] for _ in range(n))
 
+def emoji_list(n):
+    # TODO ensure distinct emoji
+    return [random_emoji()[0] for _ in range(n)]
 
 def handle_message(client, data):
     if data['type'] == 'join':
@@ -123,13 +126,13 @@ def handle_message(client, data):
             'username': username
         })
     elif data['type'] == 'start':
-        s = emoji_string(10)
+        s = emoji_list(10)
 
         print(f'Starting game with string {s} and {len(clients)} clients')
 
         notify_all({
             'type': 'start',
-            'emoji': s
+            'emoji': s,
         })
 
         # TODO keep track of this user being messenger
