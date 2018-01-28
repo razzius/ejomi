@@ -12,7 +12,7 @@ function getEditDistance(a, b) {
   return mismatches;
 }
 
-// props: referenceString
+// props: referenceString, onSubmit: string -> void
 class TextInput extends Component {
 
   constructor(props) {
@@ -32,6 +32,7 @@ class TextInput extends Component {
   _handleSubmit = (event) => {
     console.log('submitted ' + this.state.value);
     event.preventDefault();
+    this.props.onSubmit && this.props.onSubmit(this.state.value);
   }
 
   render() {

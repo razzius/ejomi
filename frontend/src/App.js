@@ -52,6 +52,10 @@ function handleMessage(message) {
       this.setState({
         users: data.users,
       });
+    } else if (data.type === 'messenger') {
+      this.setState({
+        goalEmojiIndex: data.goal,
+      });
     }
   }
 
@@ -66,7 +70,7 @@ class App extends Component {
     this.state = {
       currentPage: DEFAULT_PAGE,
       emoji: ['😂','😄','😃','😀','😊','😉','😍','😘','😚','😗'],
-      selectedEmojiIndex: 5,
+      goalEmojiIndex: 5,
       userId: -1,
       users: [],
     };
@@ -79,6 +83,11 @@ class App extends Component {
     this.ws = ws
   }
 
+  // for convenience
+  _sendMessage = (message) => {
+    sendMessage(this.ws, message);
+  }
+
   handleJoin(event) {
     sendMessage(this.ws, {type: 'join', username: this.input.value})
   }
@@ -87,12 +96,19 @@ class App extends Component {
     sendMessage(this.ws, {type: 'start'})
   }
 
+  _onSubmitHint = (hint) => {
+    this._sendMessage({
+      hint: hint,
+      type: 'hint',
+    });
+  }
+
   render() {
     console.log("State: ", this.state);
     const {
       currentPage,
       emoji,
-      selectedEmojiIndex,
+      goalEmojiIndex,
       userId,
       users,
     } = this.state;
@@ -112,7 +128,8 @@ class App extends Component {
       pageComponent =
         <Messenger
           emojiList={emoji}
-          selectedEmojiIndex={selectedEmojiIndex}
+          onSubmit={this._onSubmitHint}
+          selectedEmojiIndex={goalEmojiIndex}
           timerSeconds={30}
         />;
     } else if (currentPage === PAGES.SCRAMBLER) {

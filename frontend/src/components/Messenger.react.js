@@ -13,7 +13,7 @@ class Messenger extends Component {
           emojiList={this.props.emojiList}
           counterIndex={0} />
         <p>Describe the above selected emoji:</p>
-        <TextInput />
+        <TextInput onSubmit={this.props.onSubmit} />
       </div>
     );
   }
