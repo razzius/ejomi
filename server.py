@@ -18,7 +18,7 @@ app.debug = 'DEBUG' in os.environ
 sockets = Sockets(app)
 redis = redis.from_url(REDIS_URL)
 
-
+current_round = 0
 clients = {}
 
 pubsub = redis.pubsub()
@@ -67,10 +67,10 @@ def emoji_string(n):
     return ''.join(random_emoji()[0] for _ in range(n))
 
 
-def handle_message(ws, data):
+def handle_message(client, data):
     if data['type'] == 'join':
         username = data['username']
-        clients[ws] = username
+        clients[client] = username
 
         notify_all({
             'type': 'join',
@@ -89,45 +89,84 @@ def handle_message(ws, data):
         # TODO keep track of this user being messenger
         print(f'Clients: {clients}')
 
-        messenger_user = random.choice(list(clients.keys()))
+        # messenger_user = random.choice(list(clients.keys()))
 
-        notify_user(messenger_user, {
-            'type': 'messenger',
-            'goal': random.choice(s)
-        })
+        # Generate a list of randomly shuffled users
+        client_list = list(clients)
+        random.shuffle(client_list)
+
+        for index,client in enumerate(client_list):
+            goal = random.randint(0,10)
+            notify_user(client, {
+                'type': 'messenger',
+                'goal': goal
+            })
+            clients[client]['goal'] = goal
+            clients[client]['index'] = index
+
+    # The clue that the hinter suggests
+    elif data['type'] == 'hint':
+        hint = data['hint']
+        print(f'Received hint:{hint} from {clients[client]["username"]}')
+
+        hint = validate(hint)
+        clients[client]['hint'] = hint
+
+    # The scrambled hint
+    elif data['type'] == 'scrambled_hint':
+        scrambled_hint = data['scrambled_hint']
+        print(f'Received scrambled_hint:{scrambled_hint} from {clients[client]["username"]}')
+
+        scrambled_hint = validate_scrambled(scrambled_hint,clients[client]['unscrambled_hint'])
+        clients[client]['scrambled_hint'] = scrambled_hint
+
+    elif data['type'] == 'guess':
+        guess = data['guess']
+        clients[client]['guess'][round_number] = guess
+
+        print(f'Received guess:{guess} from {clients[client]["username"]}')                 
+
     else:
         raise Exception('Unknown event {}'.format(data))
 
+# Takes in a hint and verifies the size limit
+# Returns the first 10 chars of hint if over limit, otherwise original hint
+def validate(hint):
+    return hint[:10]
+
+#TODO: Logic for verification
+def validate_scrambled(scrambled_hint,hint):
+    return hint[:10]
 
 def notify_all(data):
     redis.publish(REDIS_CHAN, json.dumps(data))
 
 
-def notify_user(ws, data):
+def notify_user(client, data):
     # janky
-    data['_user_id'] = id(ws)
+    data['_user_id'] = id(client)
     redis.publish(REDIS_CHAN, json.dumps(data))
 
 
 @sockets.route('/socket')
-def handle_websocket(ws):
-    clients[ws] = {'username': None}
+def handle_websocket(client):
+    clients[client] = {'username': None}
 
     message = {
         'type': 'welcome',
-        '_user_id': id(ws)
+        '_user_id': id(client)
     }
 
-    notify_user(ws, message)
+    notify_user(client, message)
 
-    while not ws.closed:
-        message = ws.receive()
+    while not client.closed:
+        message = client.receive()
         if message is None:
             print('Got none message')
-            del clients[ws]
+            del clients[client]
         else:
             data = json.loads(message)
 
-            handle_message(ws, data)
+            handle_message(client, data)
 
         gevent.sleep(.1)
