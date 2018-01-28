@@ -8,7 +8,7 @@ class Clock extends Component {
       currentTimeRemaining: 20,
     }
 
-    let timer = setInterval(this.tick, 1000);
+    setInterval(this.tick, 1000);
   }
 
   tick = () => {

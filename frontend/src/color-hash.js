@@ -5,10 +5,10 @@
       // make hash more sensitive for short string like 'a', 'b', 'c'
       str += 'x';
       // Note: Number.MAX_SAFE_INTEGER equals 9007199254740991
-      var MAX_SAFE_INTEGER = parseInt(9007199254740991 / seed2);
+      var MAX_SAFE_INTEGER = parseInt(9007199254740991 / seed2, 10);
       for(var i = 0; i < str.length; i++) {
           if(hash > MAX_SAFE_INTEGER) {
-              hash = parseInt(hash / seed2);
+              hash = parseInt(hash / seed2, 10);
           }
           hash = hash * seed + str.charCodeAt(i);
       }
@@ -98,9 +98,9 @@ ColorHash.prototype.hsl = function(str) {
     var hash = this.hash(str);
 
     H = hash % 359; // note that 359 is a prime
-    hash = parseInt(hash / 360);
+    hash = parseInt(hash / 360, 10);
     S = this.S[hash % this.S.length];
-    hash = parseInt(hash / this.S.length);
+    hash = parseInt(hash / this.S.length, 10);
     L = this.L[hash % this.L.length];
 
     return [H, S, L];

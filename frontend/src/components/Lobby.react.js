@@ -8,19 +8,16 @@ class Lobby extends Component {
     this.colorHash = new ColorHash();
   }
 
-  renderName = (name) => {
+  _renderName = (name) => {
     const colorHex = this.colorHash.hex(name);
     const style = { color: colorHex }
-    return <p className="userInList" style={style}>{name}</p>;
+    return <p className="userInList" key={name} style={style}>{name}</p>;
   }
 
   render() {
     return (
       <div>
-      { this.props.userList.map((name) => {
-          return this.renderName(name)
-        })
-      }
+        {this.props.userList.map(this._renderName)}
       </div>
     );
   }
