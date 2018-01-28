@@ -35,6 +35,7 @@ clients = {}
 game_instances = {}
 players = {}
 current_stage = Stages.LOBBY
+current_vote = 0
 
 pubsub = redis.pubsub()
 pubsub.subscribe(REDIS_CHAN)
@@ -103,9 +104,18 @@ def send_hint_to_everybody(client):
 def update_scores():
     pass
 
+def reset_game():
+    global clients, game_instances, players, current_stage, current_vote
+    clients = {}
+    game_instances = {}
+    players = {}
+    current_stage = Stages.LOBBY
+    current_vote = 0
+    broadcast_state()
+
 
 def start_game_timer():
-    global current_stage
+    global current_stage, current_vote
     current_stage = Stages.MESSENGER
     broadcast_state()
 
@@ -117,7 +127,11 @@ def start_game_timer():
     gevent.sleep(10)
 
     current_stage = Stages.VOTER
+    current_vote = next(game_id for game_id in game_instances)
     broadcast_state()
+
+    gevent.sleep(10)
+    reset_game()
 
     # for client in clients:
     #     send_hint_to_everybody(client)
@@ -143,6 +157,7 @@ def make_emoji_list(n):
 def broadcast_state():
     notify_all({
         'current_stage': current_stage.name,
+        'current_vote': current_vote,
         'type': 'state_update',
         'games': {k: v.to_dict() for (k, v) in game_instances.items()},
         'users': {client_id: player.to_dict() for (client_id, player) in players.items()}
@@ -199,9 +214,9 @@ def handle_message(client, data):
 
     elif data['type'] == 'guess':
         guess = data['guess']
-        # clients[client]['guess'][round_number] = guess
-
         print(f'Received guess:{guess} from {clients[client]["username"]}')
+
+
 
     else:
         raise Exception('Unknown event {}'.format(data))

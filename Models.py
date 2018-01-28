@@ -20,8 +20,7 @@ class GameInstance:
         }
 
 class Guess:
-    def __init__(self, gameInstance, guesser_id, guess_index):
-        self.gameInstance = gameInstance
+    def __init__(self, guesser_id, guess_index):
         self.guesser_id = guesser_id
         self.guess_index = guess_index
 

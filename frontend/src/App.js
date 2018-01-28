@@ -50,6 +50,7 @@ function handleMessage(message) {
     } else if (data.type === 'state_update') {
       this.setState({
         currentStage: data.current_stage,
+        currentVote: data.current_vote,
         games: data.games,
         users: data.users,
       });
@@ -70,7 +71,7 @@ class App extends Component {
 
     this.state = {
       currentStage: DEFAULT_PAGE,
-      emoji: ['😂','😄','😃','😀','😊','😉','😍','😘','😚','😗'],
+      currentVote: 0,
       games: {},
       goalEmojiIndex: 5,
       userId: -1,
@@ -115,6 +116,13 @@ class App extends Component {
     });
   }
 
+  _onSubmitScrambledHint = (scrambled_hint) => {
+    this._sendMessage({
+      scrambled_hint: scrambled_hint,
+      type: 'scrambled_hint',
+    });
+  }
+
   _getGameByMessenger = (messenger_id) => {
     return Object.values(this.state.games).find(game =>
       game.messenger_id === messenger_id
@@ -131,7 +139,8 @@ class App extends Component {
     console.log("State: ", this.state);
     const {
       currentStage,
-      emoji,
+      currentVote,
+      games,
       userId,
       users,
     } = this.state;
@@ -157,18 +166,25 @@ class App extends Component {
           emojiList={game.emoji_board}
           onSubmit={this._onSubmitHint}
           selectedEmojiIndex={game.goal_index}
-          timerSeconds={30}
+          timerSeconds={10}
           characterLimit={10}
         />;
     } else if (currentStage === PAGES.SCRAMBLER) {
       const game = this._getGameByScrambler(userId);
-      pageComponent = <Scrambler message={game.message}/>;
+      pageComponent =
+        <Scrambler
+          emojiList={game.emoji_board}
+          onSubmit={this._onSubmitScrambledHint}
+          message={game.message}
+          timerSeconds={10}
+        />;
     } else if (currentStage === PAGES.VOTER) {
+      const game = games[currentVote];
       pageComponent = (
         <Voter
-          emojiList={emoji}
-          timerSeconds={30}
-          scrambledMessage={'wagwagfrog'}
+          emojiList={game.emoji_board}
+          scrambledMessage={game.scrambled_message}
+          timerSeconds={10}
         />
       );
     }

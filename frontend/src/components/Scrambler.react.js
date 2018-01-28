@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import Clock from './Clock.react';
+import EmojiBoard from './EmojiBoard.react';
 import TextInput from './TextInput.react';
 
 // props: message
@@ -20,9 +22,13 @@ class Scrambler extends Component {
     const message = this.props.message;
     return (
       <div>
+        <EmojiBoard
+          emojiList={this.props.emojiList}
+          counterIndex={0} />
         <p>Original message: {message}</p>
         <p>Your scramble:</p>
-        <TextInput referenceString={message} />
+        <TextInput onSubmit={this.props.onSubmit} referenceString={message} />
+        <Clock timerSeconds={this.props.timerSeconds} />
       </div>
     );
   }

@@ -23,7 +23,7 @@ class Lobby extends Component {
   }
 
   _onJoin = () => {
-    if (this.input.value.length == 0) {
+    if (this.input.value.length === 0) {
       return;
     }
     this.setState({
@@ -51,7 +51,7 @@ class Lobby extends Component {
     </div> : null;
 
     const addPlayersText = !this.props.showStart ? " (need " + (3 - this.props.userList.length) + " more)" : "";
-    const playerMessage = this.props.userList.length + (this.props.userList.length == 1 ? " Player in Lobby:" :" Players in Lobby:" + addPlayersText);
+    const playerMessage = this.props.userList.length + (this.props.userList.length === 1 ? " Player in Lobby:" :" Players in Lobby:" + addPlayersText);
 
     return (
       <div>
