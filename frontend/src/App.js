@@ -202,8 +202,10 @@ class App extends Component {
         />;
     } else if (currentStage === PAGES.VOTER) {
       const game = games[currentVote];
+      const allowedToVote = game.messenger_id !== userId && game.scrambler_id !== userId;
       pageComponent = (
         <Voter
+          allowedToVote={allowedToVote}
           emojiList={game.emoji_board}
           onSubmit={this._onSubmitVote}
           scrambledMessage={game.scrambled_message}

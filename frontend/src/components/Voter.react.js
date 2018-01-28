@@ -21,21 +21,32 @@ class Voter extends Component {
   }
 
   render() {
+    const {
+      allowedToVote,
+      emojiList,
+      onSubmit,
+      scrambledMessage,
+      timerSeconds,
+    } = this.props;
+
     return (
       <div>
         <p>
-          {"Scrambled Message: " + this.props.scrambledMessage}
+          {"Scrambled Message: " + scrambledMessage}
         </p>
         <EmojiBoard
-          emojiList={this.props.emojiList}
-          onEmojiClick={this._onEmojiClick}
-          goalEmojiIndex={this.state.selectedEmojiIndex}
+          emojiList={emojiList}
+          onEmojiClick={allowedToVote && this._onEmojiClick}
+          goalEmojiIndex={allowedToVote && this.state.selectedEmojiIndex}
         />
-        <button
-          onClick={() => this.props.onSubmit(this.state.selectedEmojiIndex)}>
-          Submit Vote
-        </button>
-        <Clock timerSeconds={this.props.timerSeconds} />
+        {allowedToVote
+          ? <button
+              onClick={() => onSubmit(this.state.selectedEmojiIndex)}>
+              Submit Vote
+            </button>
+          : <p>Waiting for other players to vote...</p>
+        }
+        <Clock timerSeconds={timerSeconds} />
       </div>
     );
   }
