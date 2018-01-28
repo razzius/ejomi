@@ -1,3 +1,4 @@
+from enum import Enum
 import json
 import os
 import random
@@ -11,6 +12,8 @@ from flask_sockets import Sockets
 
 from random_emoji import random_emoji
 
+
+
 REDIS_URL = os.environ.get('REDIS_URL', 'localhost:6371')
 REDIS_CHAN = 'emoji'
 
@@ -20,11 +23,18 @@ app.debug = 'DEBUG' in os.environ
 sockets = Sockets(app)
 redis = redis.from_url(REDIS_URL)
 
+# Game Stages
+class Stages(Enum):
+    LOBBY = 'LOBBY'
+    MESSENGER = 'MESSENGER'
+    SCRAMBLER = 'SCRAMBLER'
+    VOTER = 'VOTER'
+
 # Global State
-current_round = 0
 clients = {}
 game_instances = {}
 players = {}
+current_stage = Stages.LOBBY
 
 pubsub = redis.pubsub()
 pubsub.subscribe(REDIS_CHAN)
@@ -95,21 +105,28 @@ def update_scores():
 
 
 def start_game_timer():
+    global current_stage
+    current_stage = Stages.MESSENGER
+    broadcast_state()
+
     gevent.sleep(10)
 
-    for client in clients:
-        send_hint_to_scrambler(client)
+    current_stage = Stages.SCRAMBLER
+    broadcast_state()
 
     gevent.sleep(10)
 
-    for client in clients:
-        send_hint_to_everybody(client)
+    current_stage = Stages.VOTER
+    broadcast_state()
 
-        gevent.sleep(30)
-
-        round += 1
-        # round is over, calculate scores
-        update_scores()
+    # for client in clients:
+    #     send_hint_to_everybody(client)
+    #
+    #     gevent.sleep(30)
+    #
+    #     round += 1
+    #     # round is over, calculate scores
+    #     update_scores()
 
 
 @app.route('/')
@@ -125,6 +142,7 @@ def make_emoji_list(n):
 
 def broadcast_state():
     notify_all({
+        'current_stage': current_stage.name,
         'type': 'state_update',
         'games': {k: v.to_dict() for (k, v) in game_instances.items()},
         'users': {id(client): player.to_dict() for (client, player) in players.items()}
@@ -156,46 +174,24 @@ def handle_message(client, data):
 
         broadcast_state()
 
-        notify_all({
-            'type': 'start',
-        })
-        #
-        # # TODO keep track of this user being messenger
-        # print(f'Clients: {clients}')
-        #
-        # # messenger_user = random.choice(list(clients.keys()))
-        #
-        # # Generate a list of randomly shuffled users
-        # client_list = list(clients)
-        # random.shuffle(client_list)
-        #
-        # for index,client in enumerate(client_list):
-        #     goal = random.randint(0, 10)
-        #     notify_user(client, {
-        #         'type': 'messenger',
-        #         'goal': goal
-        #     })
-        #     clients[client]['goal'] = goal
-        #     clients[client]['index'] = index
-        #
-        # gevent.spawn(start_game_timer)
+        gevent.spawn(start_game_timer)
 
 
     # The clue that the hinter suggests
     elif data['type'] == 'hint':
-        hint = data['hint']
+        hint = validate(data['hint'])
         print(f'Received hint:{hint} from {clients[client]["username"]}')
 
-        hint = validate(hint)
-        clients[client]['hint'] = hint
+        game = next(game for game in game_instances if game.messenger_id == id(client))
+        game.message = hint
 
     # The scrambled hint
     elif data['type'] == 'scrambled_hint':
         scrambled_hint = data['scrambled_hint']
         print(f'Received scrambled_hint:{scrambled_hint} from {clients[client]["username"]}')
 
-        scrambled_hint = validate_scrambled(scrambled_hint, clients[client]['unscrambled_hint'])
-        clients[client]['scrambled_hint'] = scrambled_hint
+        game = next(game for game in game_instances if game.scrambler_id == id(client))
+        game.scrambled_message = scrambled_hint
 
     elif data['type'] == 'guess':
         guess = data['guess']
@@ -238,7 +234,7 @@ def handle_websocket(client):
         '_user_id': id(client)
     }
 
-    # broadcast_state()
+    broadcast_state()
 
     notify_user(client, message)
 

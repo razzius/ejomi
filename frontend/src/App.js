@@ -43,17 +43,13 @@ function handleMessage(message) {
 
     console.log('Received', data);
 
-    if (data.type === 'start') {
-      this.setState({
-        currentPage: PAGES.MESSENGER,
-        emoji: data.emoji,
-      });
-    } else if (data.type === 'welcome') {
+    if (data.type === 'welcome') {
       this.setState({
         userId: data._user_id,
       });
     } else if (data.type === 'state_update') {
       this.setState({
+        currentStage: data.current_stage,
         games: data.games,
         users: data.users,
       });
@@ -73,7 +69,7 @@ class App extends Component {
     super(props);
 
     this.state = {
-      currentPage: DEFAULT_PAGE,
+      currentStage: DEFAULT_PAGE,
       emoji: ['😂','😄','😃','😀','😊','😉','😍','😘','😚','😗'],
       games: {},
       goalEmojiIndex: 5,
@@ -128,7 +124,7 @@ class App extends Component {
   render() {
     console.log("State: ", this.state);
     const {
-      currentPage,
+      currentStage,
       emoji,
       userId,
       users,
@@ -136,7 +132,7 @@ class App extends Component {
 
 
     let pageComponent = null;
-    if (currentPage === PAGES.LOBBY) {
+    if (currentStage === PAGES.LOBBY) {
       pageComponent =
         <div>
           <p>userId: {userId}</p>
@@ -147,7 +143,7 @@ class App extends Component {
             showStart = {Object.keys(users).length > 2}
           />
         </div>;
-    } else if (currentPage === PAGES.MESSENGER) {
+    } else if (currentStage === PAGES.MESSENGER) {
       const game = this._getGameByMessenger(userId);
       console.log("found game", game);
       pageComponent =
@@ -158,9 +154,9 @@ class App extends Component {
           timerSeconds={30}
           characterLimit={10}
         />;
-    } else if (currentPage === PAGES.SCRAMBLER) {
+    } else if (currentStage === PAGES.SCRAMBLER) {
       pageComponent = <Scrambler message={'flagfllagg'}/>;
-    } else if (currentPage === PAGES.VOTER) {
+    } else if (currentStage === PAGES.VOTER) {
       pageComponent = (
         <Voter
           emojiList={emoji}
@@ -172,7 +168,7 @@ class App extends Component {
     return (
       <div className="App">
         <p>
-          Current Page: {currentPage}
+          Current Stage: {currentStage}
         </p>
         {pageComponent}
       </div>
