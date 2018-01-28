@@ -26,6 +26,8 @@ class Player:
         self.score = score
 
     def to_dict(self):
-        x = self.__dict__
-        del x['client']
-        return x
+        return {
+            k: v
+            for k, v in self.__dict__.items()
+            if k != 'client'
+        }
