@@ -5,6 +5,7 @@ from Models import *
 
 import gevent
 import redis
+
 from flask import Flask, render_template
 from flask_sockets import Sockets
 
@@ -138,8 +139,8 @@ def handle_message(client, data):
         if len(players) < 3:
             raise Exception("Not enough players")
 
-        player_ids = players.keys()
-        derangement = player_ids
+        player_ids = list(players.keys())
+        derangement = list(player_ids)
         while any(x == y for (x,y) in zip(player_ids, derangement)):
             random.shuffle(derangement)
 
