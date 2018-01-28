@@ -160,6 +160,7 @@ class App extends Component {
       pageComponent = (
         <Voter
           emojiList={emoji}
+          timerSeconds={30}
           scrambledMessage={'wagwagfrog'}
         />
       );

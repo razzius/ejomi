@@ -1,19 +1,25 @@
 import React, { Component } from 'react';
 import EmojiBoard from './EmojiBoard.react';
 import TextInput from './TextInput.react';
+import Clock from './Clock.react';
+
 
 // props: emojis
 class Messenger extends Component {
 
   render() {
-    const describeText = "Describe the selected emoji with " + this.props.characterLimit + " letters"
+    const prompt = "Using " + this.props.characterLimit + " letters, describe only the selected emoji." +
+    " Other players will guess which emoji you're describing. " +
+    "The catch is, another player will swap some letters before the other players see your message."
     return (
       <div>
         <EmojiBoard
           messageIndex={this.props.selectedEmojiIndex}
           emojiList={this.props.emojiList}
           counterIndex={0} />
-        <TextInput onSubmit={this.props.onSubmit} placeHolder={describeText} />
+          <p className="prompt"> {prompt} </p>
+        <TextInput onSubmit={this.props.onSubmit}/>
+        <Clock timerSeconds={this.props.timerSeconds} />
       </div>
     );
   }
