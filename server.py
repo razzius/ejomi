@@ -61,7 +61,7 @@ def get_scrambler_index(client):
 
 def get_scrambler(client):
     index = get_scrambler_index(client)
-    return next(user for user in users if clients[user]['index'] == index)
+    return next(user for (user, client) in clients.items() if client['index'] == index)
 
 def send_hint_to_scrambler(client):
     scrambler = get_scrambler(client)
@@ -123,7 +123,7 @@ def handle_message(client, data):
 
         notify_all({
             'type': 'update_users',
-            'users': [client['username'] for client in clients.values()]
+            'users': [client_data['username'] or id(client) for client, client_data in clients.items()]
         })
     elif data['type'] == 'start':
         s = emoji_list(10)
@@ -201,7 +201,7 @@ def notify_user(client, data):
 
 def get_bootstrap_state():
     return {
-        'users': [client['username'] for client in clients.values()],
+        'users': [client_data['username'] or id(client) for client, client_data in clients.items()],
     }
 
 @sockets.route('/socket')
