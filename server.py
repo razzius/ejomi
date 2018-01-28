@@ -34,6 +34,7 @@ class Stages(Enum):
     MESSENGER = 'MESSENGER'
     SCRAMBLER = 'SCRAMBLER'
     VOTER = 'VOTER'
+    REVEALER = 'REVEALER'
 
 # Global State
 clients = {}
@@ -45,13 +46,10 @@ current_vote = 0
 pubsub = redis.pubsub()
 pubsub.subscribe(REDIS_CHAN)
 
-def gen_random_id():
-    return id(object())
-
 def send(client, raw_data):
     try:
         client.send(raw_data)
-    except Exception:
+    except Exception as e:
         app.logger.exception('Failed to send to client, removing from pool')
         del clients[client]
 
@@ -131,11 +129,16 @@ def start_game_timer():
 
     gevent.sleep(10)
 
-    current_stage = Stages.VOTER
-    current_vote = next(game_id for game_id in game_instances)
-    broadcast_state()
+    for game_id in game_instances:
+        current_stage = Stages.VOTER
+        current_vote = game_id
+        broadcast_state()
+        gevent.sleep(10)
+        current_stage = Stages.REVEALER
+        broadcast_state()
+        gevent.sleep(10)
 
-    gevent.sleep(10)
+
     reset_game()
 
     # for client in clients:
@@ -173,6 +176,7 @@ def get_client_id(client):
     return clients[client]['id']
 
 def handle_message(client, data):
+
     client_id = get_client_id(client)
     print(f'handle_message({client_id}, {data})')
 
@@ -218,10 +222,12 @@ def handle_message(client, data):
         game = next(game for game in game_instances.values() if game.scrambler_id == client_id)
         game.scrambled_message = scrambled_hint
 
-    elif data['type'] == 'guess':
-        guess = data['guess']
-        print(f'Received guess:{guess} from {clients[client]["username"]}')
+    elif data['type'] == 'vote':
+        vote = data['vote']
+        print(f'Received vote:{vote} from {clients[client]["username"]}')
 
+        game = game_instances[data['game_id']]
+        game.votes[client_id] = vote
 
 
     else:
@@ -253,7 +259,7 @@ def handle_websocket(client):
     clients[client] = {
         'id': client_id,
         'username': None,
-        'guess': {}
+        'vote': {}
     }
 
     message = {
@@ -273,6 +279,10 @@ def handle_websocket(client):
         else:
             data = json.loads(message)
 
-            handle_message(client, data)
+            try:
+                handle_message(client, data)
+            except Exception as e:
+                app.logger.exception('Failed to process error')
+
 
         gevent.sleep(.1)

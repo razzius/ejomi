@@ -14,10 +14,6 @@ class Scrambler extends Component {
     };
   }
 
-  _onChange = (event) => {
-    this.setState({value: event.target.value});
-  };
-
   render() {
     const message = this.props.message;
     return (
