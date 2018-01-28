@@ -25,6 +25,8 @@ app = Flask(
 
 app.debug = 'DEBUG' in os.environ
 
+SERVER_NAME = 'ejomi.herokuapp.com' if not app.debug else 'localhost'
+
 sockets = Sockets(app)
 redis = redis.from_url(REDIS_URL)
 
