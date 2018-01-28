@@ -13,7 +13,7 @@ class Clock extends Component {
 
   tick = () => {
     this.setState({
-        currentTimeRemaining: this.state.currentTimeRemaining - 1
+        currentTimeRemaining: Math.max(this.state.currentTimeRemaining - 1, 0)
     });
   }
 

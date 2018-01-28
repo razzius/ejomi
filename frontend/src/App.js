@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReconnectingWebsocket from 'reconnecting-websocket'
 
 import './App.css';
-import Messenger from './Messenger.react';
+import Messenger from './components/Messenger.react';
 import Scrambler from './components/Scrambler.react';
 import Voter from './components/Voter.react';
 import EmojiBoard from './components/EmojiBoard.react';
