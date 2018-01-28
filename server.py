@@ -119,11 +119,11 @@ def emoji_list(n):
 def handle_message(client, data):
     if data['type'] == 'join':
         username = data['username']
-        clients[client] = username
+        clients[client]['username'] = username
 
         notify_all({
-            'type': 'join',
-            'username': username
+            'type': 'update_users',
+            'users': [client['username'] for client in clients.values()]
         })
     elif data['type'] == 'start':
         s = emoji_list(10)
@@ -199,6 +199,10 @@ def notify_user(client, data):
     data['_user_id'] = id(client)
     redis.publish(REDIS_CHAN, json.dumps(data))
 
+def get_bootstrap_state():
+    return {
+        'users': [client['username'] for client in clients.values()],
+    }
 
 @sockets.route('/socket')
 def handle_websocket(client):
@@ -209,6 +213,7 @@ def handle_websocket(client):
 
     message = {
         'type': 'welcome',
+        'bootstrap_state': get_bootstrap_state(),
         '_user_id': id(client)
     }
 

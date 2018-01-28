@@ -43,6 +43,15 @@ function handleMessage(message) {
         currentPage: PAGES.MESSENGER,
         emoji: data.emoji,
       });
+    } else if (data.type === 'welcome') {
+      this.setState({
+        userId: data._user_id,
+        users: data.bootstrap_state.users,
+      });
+    } else if (data.type === 'update_users') {
+      this.setState({
+        users: data.users,
+      });
     }
   }
 
@@ -58,6 +67,8 @@ class App extends Component {
       currentPage: DEFAULT_PAGE,
       emoji: ['😂','😄','😃','😀','😊','😉','😍','😘','😚','😗'],
       selectedEmojiIndex: 5,
+      userId: -1,
+      users: [],
     };
 
     const protocol = getWsProtocol()
@@ -82,11 +93,21 @@ class App extends Component {
       currentPage,
       emoji,
       selectedEmojiIndex,
+      userId,
+      users,
     } = this.state;
 
     let pageComponent = null;
     if (currentPage === PAGES.LOBBY) {
-      pageComponent = <Lobby userList={["hi", "dude", "how ", " you ", " doing"]}/>;
+      pageComponent =
+        <div>
+          <p>userId: {userId}</p>
+          <input ref={input => {this.input = input}} />
+          <button onClick={this.handleJoin.bind(this)}>join</button>
+          <button onClick={this.handleStart.bind(this)}>start</button>
+          <h5>Users:</h5>
+          <Lobby userList={users}/>
+        </div>;
     } else if (currentPage === PAGES.MESSENGER) {
       pageComponent =
         <Messenger
@@ -107,12 +128,6 @@ class App extends Component {
 
     return (
       <div className="App">
-        <div>
-          <h4>Debug actions</h4>
-          <input ref={input => {this.input = input}} />
-          <button onClick={this.handleJoin.bind(this)}>join</button>
-          <button onClick={this.handleStart.bind(this)}>start</button>
-        </div>
         <p>
           Current Page: {currentPage}
         </p>
