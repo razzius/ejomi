@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ColorHash from '../color-hash';
+import EmojiHaiku from './EmojiHaiku.react';
 
 class Lobby extends Component {
 
@@ -54,6 +55,7 @@ class Lobby extends Component {
 
     return (
       <div>
+        <EmojiHaiku/>
         {inputForm}
         {startButton}
         <h5>{playerMessage} </h5>

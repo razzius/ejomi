@@ -168,6 +168,7 @@ class App extends Component {
 
     return (
       <div className="App">
+        <h1>EJOMI</h1>
         <p>
           Current Stage: {currentStage}
         </p>
