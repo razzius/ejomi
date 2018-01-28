@@ -88,8 +88,9 @@ class App extends Component {
     sendMessage(this.ws, message);
   }
 
-  handleJoin(event) {
-    sendMessage(this.ws, {type: 'join', username: this.input.value})
+  handleJoin(joinName) {
+    console.log(joinName);
+    sendMessage(this.ws, {type: 'join', username: joinName})
   }
 
   handleStart(event) {
@@ -118,11 +119,13 @@ class App extends Component {
       pageComponent =
         <div>
           <p>userId: {userId}</p>
-          <input ref={input => {this.input = input}} />
-          <button onClick={this.handleJoin.bind(this)}>join</button>
-          <button onClick={this.handleStart.bind(this)}>start</button>
           <h5>Users:</h5>
-          <Lobby userList={users}/>
+          <Lobby
+            userList = {users}
+            onJoin = {this.handleJoin.bind(this)}
+            onStart = {this.handleStart.bind(this)}
+            showStart = {true}
+          />
         </div>;
     } else if (currentPage === PAGES.MESSENGER) {
       pageComponent =
