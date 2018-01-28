@@ -49,7 +49,7 @@ pubsub.subscribe(REDIS_CHAN)
 def send(client, raw_data):
     try:
         client.send(raw_data)
-    except Exception:
+    except Exception as e:
         app.logger.exception('Failed to send to client, removing from pool')
         del clients[client]
 
@@ -135,6 +135,7 @@ def start_game_timer():
         broadcast_state()
         gevent.sleep(10)
         current_stage = Stages.REVEALER
+        broadcast_state()
         gevent.sleep(10)
 
 
@@ -175,6 +176,7 @@ def get_client_id(client):
     return clients[client]['id']
 
 def handle_message(client, data):
+
     client_id = get_client_id(client)
     print(f'handle_message({client_id}, {data})')
 
@@ -224,7 +226,7 @@ def handle_message(client, data):
         vote = data['vote']
         print(f'Received vote:{vote} from {clients[client]["username"]}')
 
-        game = game_instances[data['vote']]
+        game = game_instances[data['game_id']]
         game.votes[client_id] = vote
 
 
@@ -277,6 +279,10 @@ def handle_websocket(client):
         else:
             data = json.loads(message)
 
-            handle_message(client, data)
+            try:
+                handle_message(client, data)
+            except Exception as e:
+                app.logger.exception('Failed to process error')
+
 
         gevent.sleep(.1)
