@@ -144,7 +144,7 @@ class App extends Component {
             userList = {Object.values(users).map(user => user.username)}
             onJoin = {this.handleJoin.bind(this)}
             onStart = {this.handleStart.bind(this)}
-            showStart = {true}
+            showStart = {Object.keys(users).length > 2}
           />
         </div>;
     } else if (currentPage === PAGES.MESSENGER) {

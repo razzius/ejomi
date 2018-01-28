@@ -49,15 +49,14 @@ class Lobby extends Component {
       <button onClick={this.props.onStart}>Start</button>
     </div> : null;
 
-
-    const numberPlayers = this.props.userList.length + (this.props.userList.length == 1 ? " Player in Lobby:" :" Players in Lobby:");
-    const header = <h5> {numberPlayers} </h5>
+    const addPlayersText = !this.props.showStart ? " (need " + (3 - this.props.userList.length) + " more)" : "";
+    const playerMessage = this.props.userList.length + (this.props.userList.length == 1 ? " Player in Lobby:" :" Players in Lobby:" + addPlayersText);
 
     return (
       <div>
         {inputForm}
         {startButton}
-        {header}
+        <h5>{playerMessage} </h5>
         {this.props.userList.sort((name) => { return name === this.state.currentUser ? -1: 1;})
           .map(this._renderName)}
       </div>
