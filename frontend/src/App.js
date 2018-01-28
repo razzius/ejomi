@@ -84,7 +84,7 @@ class App extends Component {
 
     const protocol = getWsProtocol()
 
-    const ws = new ReconnectingWebsocket('/socket');
+    const ws = new ReconnectingWebsocket(`${protocol}${window.location.host}/socket`);
     ws.onmessage = handleMessage.bind(this);
     if (DEBUG_MODE) {
       ws.onopen = (e) => {
