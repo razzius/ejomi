@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import EmojiBoard from './EmojiBoard.react';
 
 import Clock from './Clock.react';
-import Message from './Message.react';
 
 class Voter extends Component {
 

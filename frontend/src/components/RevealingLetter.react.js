@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-class Message extends Component {
+class RevealingLetter extends Component {
 
   constructor(props) {
     super(props);
@@ -23,14 +23,16 @@ class Message extends Component {
       this.alpha = 1;
     }
 
-    this.originalLetter = 'a';
-    this.scrambledLetter = 'b';
+    this.originalLetter = this.props.originalLetter;
+    this.scrambledLetter = this.props.scrambledLetter;
 
     let positions = this.getPositions(this.scrambledLetter)
     this.setPositions(this.particles, positions)
 
     this.displayText(this.scrambledLetter);
-    setTimeout(this.drawToNewPositions, 2000);
+    if(this.originalLetter != this.scrambledLetter){
+      setTimeout(this.drawToNewPositions, 2000);
+    }
   }
 
   startTransitionDraw() {
@@ -163,4 +165,4 @@ class Message extends Component {
   }
 }
 
-export default Message;
+export default RevealingLetter;
