@@ -29,6 +29,11 @@ SERVER_NAME = 'ejomi.herokuapp.com' if not app.debug else 'localhost'
 sockets = Sockets(app)
 redis = redis.from_url(REDIS_URL)
 
+MESSENGER_TIME = 20
+SCRAMBLER_TIME = 20
+VOTER_TIME = 20
+REVEALER_TIME = 20
+
 # Game Stages
 class Stages(Enum):
     LOBBY = 'LOBBY'
@@ -123,21 +128,21 @@ def start_game_timer():
     current_stage = Stages.MESSENGER
     broadcast_state()
 
-    gevent.sleep(10)
+    gevent.sleep(MESSENGER_TIME)
 
     current_stage = Stages.SCRAMBLER
     broadcast_state()
 
-    gevent.sleep(10)
+    gevent.sleep(SCRAMBLER_TIME)
 
     for game_id in game_instances:
         current_stage = Stages.VOTER
         current_vote = game_id
         broadcast_state()
-        gevent.sleep(10)
+        gevent.sleep(VOTER_TIME)
         current_stage = Stages.REVEALER
         broadcast_state()
-        gevent.sleep(10)
+        gevent.sleep(REVEALER_TIME)
 
 
     reset_game()
