@@ -133,6 +133,7 @@ class App extends Component {
           onSubmit={this._onSubmitHint}
           selectedEmojiIndex={goalEmojiIndex}
           timerSeconds={30}
+          characterLimit={10}
         />;
     } else if (currentPage === PAGES.SCRAMBLER) {
       pageComponent = <Scrambler message={'flagfllagg'}/>;

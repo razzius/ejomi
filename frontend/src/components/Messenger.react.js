@@ -6,14 +6,14 @@ import TextInput from './TextInput.react';
 class Messenger extends Component {
 
   render() {
+    const describeText = "Describe the selected emoji with " + this.props.characterLimit + " letters"
     return (
       <div>
         <EmojiBoard
           messageIndex={this.props.selectedEmojiIndex}
           emojiList={this.props.emojiList}
           counterIndex={0} />
-        <p>Describe the above selected emoji:</p>
-        <TextInput onSubmit={this.props.onSubmit} />
+        <TextInput onSubmit={this.props.onSubmit} placeHolder={describeText} />
       </div>
     );
   }

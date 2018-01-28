@@ -38,10 +38,10 @@ class Lobby extends Component {
         <input
           type="text"
           ref={input => {this.input = input;}}
+          className="inputBox"
+          placeholder="Payler naem gose here"
         />
-        <div>
-          <button onClick={this._onJoin}>Join</button>
-        </div>
+        <button className="inputButton" onClick={this._onJoin}>Join</button>
       </div> : null;
 
     const startButton = this.props.showStart ?

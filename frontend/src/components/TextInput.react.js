@@ -55,9 +55,9 @@ class TextInput extends Component {
     return (
       <form onSubmit={this._handleSubmit}>
         <label>
-          <input type="text" name="name" value={value} onChange={this._handleChange} />
+          <input type="text" className="inputBox" value={value} onChange={this._handleChange} placeholder = {this.props.placeHolder}/>
         </label>
-        <input type="submit" value="Submit" />
+        <input type="submit" className="inputButton" value="Submit" />
         {warning}
       </form>
     );
