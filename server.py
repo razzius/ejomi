@@ -13,7 +13,6 @@ from flask_sockets import Sockets
 from random_emoji import random_emoji
 
 
-
 REDIS_URL = os.environ.get('REDIS_URL', 'localhost:6371')
 REDIS_CHAN = 'emoji'
 
