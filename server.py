@@ -7,7 +7,7 @@ from Models import GameInstance, Player
 import gevent
 import redis
 
-from flask import Flask, render_template
+from flask import Flask, send_from_directory
 from flask_sockets import Sockets
 
 from random_emoji import random_emoji
@@ -17,7 +17,12 @@ from random_emoji import random_emoji
 REDIS_URL = os.environ.get('REDIS_URL', 'localhost:6371')
 REDIS_CHAN = 'emoji'
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    static_url_path='/static',
+    static_folder='frontend/build/static'
+)
+
 app.debug = 'DEBUG' in os.environ
 
 sockets = Sockets(app)
@@ -145,7 +150,8 @@ def start_game_timer():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return send_from_directory('frontend/build/', 'index.html')
+
 
 def make_emoji_list(n):
     # ensure distinct emoji
