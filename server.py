@@ -56,6 +56,52 @@ def publish_redis_messages_to_clients():
 
 gevent.spawn(publish_redis_messages_to_clients)
 
+def get_scrambler_index(client):
+    return (clients[client]['index'] + 1 ) % len(clients)
+
+def get_scrambler(client):
+    index = get_scrambler_index(client)
+    return next(user for user in users if clients[user]['index'] == index)
+
+def send_hint_to_scrambler(client):
+    scrambler = get_scrambler(client)
+
+    clients[scrambler]['unscrambled_hint'] = client['hint']
+
+    notify_user(scrambler, {
+        'type': 'unscrambled_hint',
+        'unscrambled_hint': client['hint'],
+    })
+
+def send_hint_to_everybody(client):
+    scrambler = get_scrambler(client)
+    notify_all({
+        'type': 'scrambled_hint',
+        'scrambled_hint': clients[scrambler]['scrambled_hint']
+    })
+
+
+def update_scores():
+    pass
+
+
+def start_game_timer():
+    gevent.sleep(10)
+
+    for client in clients:
+        send_hint_to_scrambler(client)
+
+    gevent.sleep(10)
+
+    for client in clients:
+        send_hint_to_everybody(client)
+
+        gevent.sleep(30)
+
+        round += 1
+        # round is over, calculate scores
+        update_scores()
+
 
 @app.route('/')
 def index():
@@ -96,13 +142,15 @@ def handle_message(client, data):
         random.shuffle(client_list)
 
         for index,client in enumerate(client_list):
-            goal = random.randint(0,10)
+            goal = random.randint(0, 10)
             notify_user(client, {
                 'type': 'messenger',
                 'goal': goal
             })
             clients[client]['goal'] = goal
             clients[client]['index'] = index
+
+        gevent.spawn(start_game_timer)
 
     # The clue that the hinter suggests
     elif data['type'] == 'hint':
@@ -117,14 +165,14 @@ def handle_message(client, data):
         scrambled_hint = data['scrambled_hint']
         print(f'Received scrambled_hint:{scrambled_hint} from {clients[client]["username"]}')
 
-        scrambled_hint = validate_scrambled(scrambled_hint,clients[client]['unscrambled_hint'])
+        scrambled_hint = validate_scrambled(scrambled_hint, clients[client]['unscrambled_hint'])
         clients[client]['scrambled_hint'] = scrambled_hint
 
     elif data['type'] == 'guess':
         guess = data['guess']
         clients[client]['guess'][round_number] = guess
 
-        print(f'Received guess:{guess} from {clients[client]["username"]}')                 
+        print(f'Received guess:{guess} from {clients[client]["username"]}')
 
     else:
         raise Exception('Unknown event {}'.format(data))
@@ -150,7 +198,10 @@ def notify_user(client, data):
 
 @sockets.route('/socket')
 def handle_websocket(client):
-    clients[client] = {'username': None}
+    clients[client] = {
+        'username': None,
+        'guess': {}
+    }
 
     message = {
         'type': 'welcome',
