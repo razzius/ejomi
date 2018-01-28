@@ -7,6 +7,7 @@ import Messenger from './components/Messenger.react';
 import Scrambler from './components/Scrambler.react';
 import Voter from './components/Voter.react';
 import Revealer from './components/Revealer.react';
+import MockState from './MockState';
 
 const PAGES = {
   LOBBY: 'LOBBY',
@@ -16,7 +17,8 @@ const PAGES = {
   REVEALER: 'REVEALER'
 };
 
-const DEFAULT_PAGE = PAGES.LOBBY;
+const SHOULD_MOCK_STATE = false;
+
 // print extra logging
 const DEBUG_MODE = false;
 
@@ -72,7 +74,7 @@ class App extends Component {
     super(props);
 
     this.state = {
-      currentStage: DEFAULT_PAGE,
+      currentStage: PAGES.LOBBY,
       currentVote: 0,
       games: {},
       goalEmojiIndex: 5,
@@ -125,35 +127,45 @@ class App extends Component {
     });
   }
 
+  // override this to mock state
+  _getState = () => {
+    if (SHOULD_MOCK_STATE) {
+      return MockState;
+    } else {
+      return this.state;
+    }
+  }
+
   _onSubmitVote = (vote) => {
     this._sendMessage({
-      game_id: this.state.currentVote,
+      game_id: this._getState().currentVote,
       vote: vote,
       type: 'vote',
     });
   }
 
   _getGameByMessenger = (messenger_id) => {
-    return Object.values(this.state.games).find(game =>
+    return Object.values(this._getState().games).find(game =>
       game.messenger_id === messenger_id
     );
   }
 
   _getGameByScrambler = (scrambler_id) => {
-    return Object.values(this.state.games).find(game =>
+    return Object.values(this._getState().games).find(game =>
       game.scrambler_id === scrambler_id
     );
   }
 
   render() {
-    console.log("State: ", this.state);
+    const state = this._getState();
+    console.log("State: ", state);
     const {
       currentStage,
       currentVote,
       games,
       userId,
       users,
-    } = this.state;
+    } = state;
 
     let pageComponent = null;
     if (currentStage === PAGES.LOBBY) {
