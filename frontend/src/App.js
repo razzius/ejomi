@@ -6,12 +6,14 @@ import Lobby from './components/Lobby.react';
 import Messenger from './components/Messenger.react';
 import Scrambler from './components/Scrambler.react';
 import Voter from './components/Voter.react';
+import Revealer from './components/Revealer.react';
 
 const PAGES = {
   LOBBY: 'LOBBY',
   MESSENGER: 'MESSENGER',
   SCRAMBLER: 'SCRAMBLER',
   VOTER: 'VOTER',
+  REVEALER: 'REVEALER'
 };
 
 const DEFAULT_PAGE = PAGES.LOBBY;
@@ -165,7 +167,7 @@ class App extends Component {
         <Messenger
           emojiList={game.emoji_board}
           onSubmit={this._onSubmitHint}
-          selectedEmojiIndex={game.goal_index}
+          goalEmojiIndex={game.goal_index}
           timerSeconds={10}
           characterLimit={10}
         />;
@@ -185,6 +187,21 @@ class App extends Component {
           emojiList={game.emoji_board}
           scrambledMessage={game.scrambled_message}
           timerSeconds={10}
+        />
+      );
+    } else if (currentStage === PAGES.REVEALER) {
+      const game = {
+        message: "hi",
+        scrambled_message: "hiid",
+        goal_index: 1,
+        emoji_board: ['A','B','C','D']
+      }
+      pageComponent = (
+        <Revealer
+          goalEmojiIndex={game.goal_index}
+          emojiList={game.emoji_board}
+          originalMessage={game.message}
+          scrambledMessage={game.scrambled_message}
         />
       );
     }

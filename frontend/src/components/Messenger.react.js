@@ -14,9 +14,9 @@ class Messenger extends Component {
     return (
       <div>
         <EmojiBoard
-          messageIndex={this.props.selectedEmojiIndex}
+          goalEmojiIndex={this.props.goalEmojiIndex}
           emojiList={this.props.emojiList}
-          counterIndex={0} />
+          counterGoalEmojiIndex={0} />
           <p className="prompt"> {prompt} </p>
         <TextInput onSubmit={this.props.onSubmit}/>
         <Clock timerSeconds={this.props.timerSeconds} />
