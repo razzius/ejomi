@@ -34,15 +34,15 @@ class Lobby extends Component {
 
   render() {
     const inputForm = this.state.showJoin ?
-      <div>
+      <form onSubmit={this._onJoin}>
         <input
           type="text"
           ref={input => {this.input = input;}}
           className="inputBox"
           placeholder="Payler naem gose here"
         />
-        <button className="inputButton" onClick={this._onJoin}>Join</button>
-      </div> : null;
+        <button type="submit" className="inputButton">Join</button>
+      </form> : null;
 
     const startButton = this.props.showStart ?
     <div>
