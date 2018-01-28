@@ -48,6 +48,7 @@ class Voter extends Component {
         }
         <Clock timerSeconds={timerSeconds} />
       </div>
+
     );
   }
 }
