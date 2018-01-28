@@ -24,7 +24,7 @@ app = Flask(
 
 app.debug = 'DEBUG' in os.environ
 
-SERVER_NAME = 'ejomi.herokuapp.com' if not app.debug else 'localhost'
+SERVER_NAME = '172.20.10.12' # if not app.debug else 'localhost'
 
 sockets = Sockets(app)
 redis = redis.from_url(REDIS_URL)
@@ -52,12 +52,23 @@ current_vote = 0
 pubsub = redis.pubsub()
 pubsub.subscribe(REDIS_CHAN)
 
+def delete_client(client):
+    client_id = get_client_id(client)
+    print(f"deleting client {client_id}")
+    if client_id in players:
+        del players[client_id]
+    if client in clients:
+        del clients[client]
+
+    broadcast_state()
+
+
 def send(client, raw_data):
     try:
         client.send(raw_data)
     except Exception as e:
         app.logger.exception('Failed to send to client, removing from pool')
-        del clients[client]
+        delete_client(client)
 
 
 def publish_redis_messages_to_clients():
@@ -281,7 +292,7 @@ def handle_websocket(client):
         message = client.receive()
         if message is None:
             print(f'Got none message, closing {client_id}')
-            del clients[client]
+            delete_client(client)
         else:
             data = json.loads(message)
 
