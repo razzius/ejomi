@@ -5,7 +5,7 @@ class Clock extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      currentTimeRemaining: 20,
+      currentTimeRemaining: this.props.timerSeconds,
     }
 
     setInterval(this.tick, 1000);

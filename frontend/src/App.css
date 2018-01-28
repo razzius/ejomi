@@ -2,27 +2,51 @@
   text-align: center;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
+
+.inputBox {
+  width: 20%;
+  padding: 10px 5px;
+  font-size: 20px;
 }
 
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
-  color: white;
+button {
+    font-size: 20px;
+    padding: 12px 15px;
+    border-radius: 5px;
+    margin-left: 8px;
 }
 
-.App-title {
-  font-size: 1.5em;
+.board {
+    width:600px;
+    margin: 0 auto;
 }
 
-.App-intro {
-  font-size: large;
+.emojiCell {
+  width: 100px;
+  height: 70px;
+  line-height: 85px;
+  font-size: 50px;
+  margin: 5px;
+  padding: 5px;
+  display: inline-block;
+  text-align: center;
+  background: #E8E8E8;
 }
 
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.selected {
+  background: #A8A8A8;
+}
+
+.prompt {
+  width:500px;
+  margin:0 auto;
+  font-size: 15px;
+}
+
+.userList {
+  font-size: 20px;
+}
+
+.playerMessage {
+  font-size: 20px;
 }

@@ -5,9 +5,15 @@ import Clock from './Clock.react';
 import Message from './Message.react';
 
 class Voter extends Component {
-  state = {
-    selectedEmojiIndex: 0,
-  };
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      selectedEmojiIndex: 0,
+    };
+
+  }
 
   _onEmojiClick = (emojiIndex) => {
     this.setState({
@@ -24,10 +30,13 @@ class Voter extends Component {
         <EmojiBoard
           emojiList={this.props.emojiList}
           onEmojiClick={this._onEmojiClick}
-          messageIndex={this.state.selectedEmojiIndex}
+          goalEmojiIndex={this.state.selectedEmojiIndex}
         />
-        <Clock />
-        <Message text={this.props.scrambledMessage}/>
+        <button
+          onClick={() => this.props.onSubmit(this.state.selectedEmojiIndex)}>
+          Submit Vote
+        </button>
+        <Clock timerSeconds={this.props.timerSeconds} />
       </div>
 
     );

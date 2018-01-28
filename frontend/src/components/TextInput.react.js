@@ -12,7 +12,7 @@ function getEditDistance(a, b) {
   return mismatches;
 }
 
-// props: referenceString
+// props: referenceString, onSubmit: string -> void
 class TextInput extends Component {
 
   constructor(props) {
@@ -32,6 +32,7 @@ class TextInput extends Component {
   _handleSubmit = (event) => {
     console.log('submitted ' + this.state.value);
     event.preventDefault();
+    this.props.onSubmit && this.props.onSubmit(this.state.value);
   }
 
   render() {
@@ -54,9 +55,9 @@ class TextInput extends Component {
     return (
       <form onSubmit={this._handleSubmit}>
         <label>
-          <input type="text" name="name" value={value} onChange={this._handleChange} />
+          <input type="text" className="inputBox" value={value} onChange={this._handleChange} placeholder = {this.props.placeHolder}/>
         </label>
-        <input type="submit" value="Submit" />
+        <input type="submit" className="inputButton" value="Submit" />
         {warning}
       </form>
     );

@@ -1,34 +1,56 @@
+from enum import Enum
 import json
 import os
 import random
+from Models import GameInstance, Player
 
 import gevent
 import redis
-from flask import Flask, render_template
+
+from flask import Flask, send_from_directory
 from flask_sockets import Sockets
 
 from random_emoji import random_emoji
 
+
 REDIS_URL = os.environ.get('REDIS_URL', 'localhost:6371')
 REDIS_CHAN = 'emoji'
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    static_url_path='/static',
+    static_folder='frontend/build/static'
+)
+
 app.debug = 'DEBUG' in os.environ
+
+SERVER_NAME = 'ejomi.herokuapp.com' if not app.debug else 'localhost'
 
 sockets = Sockets(app)
 redis = redis.from_url(REDIS_URL)
 
-current_round = 0
+# Game Stages
+class Stages(Enum):
+    LOBBY = 'LOBBY'
+    MESSENGER = 'MESSENGER'
+    SCRAMBLER = 'SCRAMBLER'
+    VOTER = 'VOTER'
+    REVEALER = 'REVEALER'
+
+# Global State
 clients = {}
+game_instances = {}
+players = {}
+current_stage = Stages.LOBBY
+current_vote = 0
 
 pubsub = redis.pubsub()
 pubsub.subscribe(REDIS_CHAN)
 
-
 def send(client, raw_data):
     try:
         client.send(raw_data)
-    except Exception:
+    except Exception as e:
         app.logger.exception('Failed to send to client, removing from pool')
         del clients[client]
 
@@ -44,9 +66,11 @@ def publish_redis_messages_to_clients():
                 print(f'Sending to {data["_user_id"]}')
                 # race condition: user disconnects
                 user = [user for user in clients.keys() if id(user) == data['_user_id']][0]
+                print(f'publishing to {id(user)} only')
 
                 gevent.spawn(send, user, json.dumps(data).encode())
             else:
+                print(f'publishing to all {len(clients)} clients')
                 for client in clients.keys():
                     gevent.spawn(send, client, message['data'])
 
@@ -61,7 +85,7 @@ def get_scrambler_index(client):
 
 def get_scrambler(client):
     index = get_scrambler_index(client)
-    return next(user for user in users if clients[user]['index'] == index)
+    return next(user for (user, client) in clients.items() if client['index'] == index)
 
 def send_hint_to_scrambler(client):
     scrambler = get_scrambler(client)
@@ -84,98 +108,128 @@ def send_hint_to_everybody(client):
 def update_scores():
     pass
 
+def reset_game():
+    global clients, game_instances, players, current_stage, current_vote
+    clients = {}
+    game_instances = {}
+    players = {}
+    current_stage = Stages.LOBBY
+    current_vote = 0
+    broadcast_state()
+
 
 def start_game_timer():
+    global current_stage, current_vote
+    current_stage = Stages.MESSENGER
+    broadcast_state()
+
     gevent.sleep(10)
 
-    for client in clients:
-        send_hint_to_scrambler(client)
+    current_stage = Stages.SCRAMBLER
+    broadcast_state()
 
     gevent.sleep(10)
 
-    for client in clients:
-        send_hint_to_everybody(client)
+    for game_id in game_instances:
+        current_stage = Stages.VOTER
+        current_vote = game_id
+        broadcast_state()
+        gevent.sleep(10)
+        current_stage = Stages.REVEALER
+        broadcast_state()
+        gevent.sleep(10)
 
-        gevent.sleep(30)
 
-        round += 1
-        # round is over, calculate scores
-        update_scores()
+    reset_game()
+
+    # for client in clients:
+    #     send_hint_to_everybody(client)
+    #
+    #     gevent.sleep(30)
+    #
+    #     round += 1
+    #     # round is over, calculate scores
+    #     update_scores()
 
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return send_from_directory('frontend/build/', 'index.html')
 
 
-def emoji_string(n):
-    # TODO ensure distinct emoji
-    return ''.join(random_emoji()[0] for _ in range(n))
+def make_emoji_list(n):
+    # ensure distinct emoji
+    emojis = set()
+    while len(emojis) < n:
+        emojis.add(random_emoji()[0])
+    return list(emojis)
 
-def emoji_list(n):
-    # TODO ensure distinct emoji
-    return [random_emoji()[0] for _ in range(n)]
+def broadcast_state():
+    notify_all({
+        'current_stage': current_stage.name,
+        'current_vote': current_vote,
+        'type': 'state_update',
+        'games': {k: v.to_dict() for (k, v) in game_instances.items()},
+        'users': {client_id: player.to_dict() for (client_id, player) in players.items()}
+    })
+
+def get_client_id(client):
+    return clients[client]['id']
 
 def handle_message(client, data):
+
+    client_id = get_client_id(client)
+    print(f'handle_message({client_id}, {data})')
+
     if data['type'] == 'join':
-        username = data['username']
-        clients[client]['username'] = username
+        player = Player(client, data['username'])
+        players[client_id] = player
+        broadcast_state()
 
-        notify_all({
-            'type': 'update_users',
-            'users': [client['username'] for client in clients.values()]
-        })
     elif data['type'] == 'start':
-        s = emoji_list(10)
+        if len(players) < 3:
+            raise Exception("Not enough players")
 
-        print(f'Starting game with string {s} and {len(clients)} clients')
+        player_ids = list(players.keys())
+        derangement = list(player_ids)
+        while any(x == y for (x, y) in zip(player_ids, derangement)):
+            random.shuffle(derangement)
 
-        notify_all({
-            'type': 'start',
-            'emoji': s,
-        })
+        for ((messenger_id, player), scrambler_id) in zip(players.items(), derangement):
+            emojis = make_emoji_list(10)
+            game_instance = GameInstance(emojis, messenger_id, scrambler_id)
+            game_instances[id(game_instance)] = game_instance
 
-        # TODO keep track of this user being messenger
-        print(f'Clients: {clients}')
+            print(f'Starting game {game_instance.to_dict()}')
 
-        # messenger_user = random.choice(list(clients.keys()))
-
-        # Generate a list of randomly shuffled users
-        client_list = list(clients)
-        random.shuffle(client_list)
-
-        for index,client in enumerate(client_list):
-            goal = random.randint(0, 10)
-            notify_user(client, {
-                'type': 'messenger',
-                'goal': goal
-            })
-            clients[client]['goal'] = goal
-            clients[client]['index'] = index
+        broadcast_state()
 
         gevent.spawn(start_game_timer)
 
+
     # The clue that the hinter suggests
     elif data['type'] == 'hint':
-        hint = data['hint']
-        print(f'Received hint:{hint} from {clients[client]["username"]}')
+        hint = validate(data['hint'])
+        print(f'Received hint:{hint} from {client_id}')
 
-        hint = validate(hint)
-        clients[client]['hint'] = hint
+        game = next(game for game in game_instances.values() if game.messenger_id == client_id)
+        game.message = hint
 
     # The scrambled hint
     elif data['type'] == 'scrambled_hint':
         scrambled_hint = data['scrambled_hint']
         print(f'Received scrambled_hint:{scrambled_hint} from {clients[client]["username"]}')
 
-        scrambled_hint = validate_scrambled(scrambled_hint, clients[client]['unscrambled_hint'])
-        clients[client]['scrambled_hint'] = scrambled_hint
+        game = next(game for game in game_instances.values() if game.scrambler_id == client_id)
+        game.scrambled_message = scrambled_hint
 
-    elif data['type'] == 'guess':
-        guess = data['guess']
-        clients[client]['guess'][round_number] = guess
+    elif data['type'] == 'vote':
+        vote = data['vote']
+        print(f'Received vote:{vote} from {clients[client]["username"]}')
 
-        print(f'Received guess:{guess} from {clients[client]["username"]}')
+        game = game_instances[data['game_id']]
+        game.votes[client_id] = vote
+
 
     else:
         raise Exception('Unknown event {}'.format(data))
@@ -195,37 +249,41 @@ def notify_all(data):
 
 def notify_user(client, data):
     # janky
-    data['_user_id'] = id(client)
+    data['_user_id'] = get_client_id(client)
     redis.publish(REDIS_CHAN, json.dumps(data))
-
-def get_bootstrap_state():
-    return {
-        'users': [client['username'] for client in clients.values()],
-    }
 
 @sockets.route('/socket')
 def handle_websocket(client):
+    client_id = id(client)
+    print(f'Got connection from {client_id}')
+
     clients[client] = {
+        'id': client_id,
         'username': None,
-        'guess': {}
+        'vote': {}
     }
 
     message = {
         'type': 'welcome',
-        'bootstrap_state': get_bootstrap_state(),
-        '_user_id': id(client)
+        '_user_id': client_id,
     }
+
+    broadcast_state()
 
     notify_user(client, message)
 
     while not client.closed:
         message = client.receive()
         if message is None:
-            print('Got none message')
+            print(f'Got none message, closing {client_id}')
             del clients[client]
         else:
             data = json.loads(message)
 
-            handle_message(client, data)
+            try:
+                handle_message(client, data)
+            except Exception as e:
+                app.logger.exception('Failed to process error')
+
 
         gevent.sleep(.1)
