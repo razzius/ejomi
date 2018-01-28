@@ -34,6 +34,7 @@ class Stages(Enum):
     MESSENGER = 'MESSENGER'
     SCRAMBLER = 'SCRAMBLER'
     VOTER = 'VOTER'
+    RESULTS = 'RESULTS'
 
 # Global State
 clients = {}
@@ -44,9 +45,6 @@ current_vote = 0
 
 pubsub = redis.pubsub()
 pubsub.subscribe(REDIS_CHAN)
-
-def gen_random_id():
-    return id(object())
 
 def send(client, raw_data):
     try:
@@ -131,11 +129,14 @@ def start_game_timer():
 
     gevent.sleep(10)
 
-    current_stage = Stages.VOTER
-    current_vote = next(game_id for game_id in game_instances)
-    broadcast_state()
+    for game_id in game_instances:
+        current_stage = Stages.VOTER
+        current_vote = game_id
+        broadcast_state()
+        gevent.sleep(10)
+        # current_stage = Stages.RESULTS
 
-    gevent.sleep(10)
+
     reset_game()
 
     # for client in clients:
@@ -218,10 +219,12 @@ def handle_message(client, data):
         game = next(game for game in game_instances.values() if game.scrambler_id == client_id)
         game.scrambled_message = scrambled_hint
 
-    elif data['type'] == 'guess':
-        guess = data['guess']
-        print(f'Received guess:{guess} from {clients[client]["username"]}')
+    elif data['type'] == 'vote':
+        vote = data['vote']
+        print(f'Received vote:{vote} from {clients[client]["username"]}')
 
+        game = game_instances[data['vote']]
+        game.votes[client_id] = vote
 
 
     else:
@@ -253,7 +256,7 @@ def handle_websocket(client):
     clients[client] = {
         'id': client_id,
         'username': None,
-        'guess': {}
+        'vote': {}
     }
 
     message = {

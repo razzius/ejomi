@@ -125,6 +125,14 @@ class App extends Component {
     });
   }
 
+  _onSubmitVote = (vote) => {
+    this._sendMessage({
+      game_id: this.state.currentVote,
+      vote: vote,
+      type: 'vote',
+    });
+  }
+
   _getGameByMessenger = (messenger_id) => {
     return Object.values(this.state.games).find(game =>
       game.messenger_id === messenger_id
@@ -185,6 +193,7 @@ class App extends Component {
       pageComponent = (
         <Voter
           emojiList={game.emoji_board}
+          onSubmit={this._onSubmitVote}
           scrambledMessage={game.scrambled_message}
           timerSeconds={10}
         />

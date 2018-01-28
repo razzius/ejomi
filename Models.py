@@ -11,7 +11,7 @@ class GameInstance:
         self.anti_goal = random.choice(anti_goal_range)
         self.message = ''
         self.scrambled_message = ''
-        self.guesses = []
+        self.votes = {}
 
     def to_dict(self):
         return {
@@ -19,10 +19,6 @@ class GameInstance:
             for k, v in self.__dict__.items()
         }
 
-class Guess:
-    def __init__(self, guesser_id, guess_index):
-        self.guesser_id = guesser_id
-        self.guess_index = guess_index
 
 class Player:
     def __init__(self, client, username, score=0):
