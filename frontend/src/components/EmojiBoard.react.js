@@ -2,28 +2,36 @@ import React, { Component } from 'react';
 import './EmojiBoard.css';
 
 function EmojiCell(props) {
-  return <div>
-          {props.selected ? '[ ' : ''}{props.value}{props.selected ? ' ]' : ''}
-        </div>;
+  return (
+    <div onClick={props.onClick}>
+      {props.selected ? '[ ' : ''}{props.value}{props.selected ? ' ]' : ''}
+    </div>
+  );
 }
 
+// props:
+// messageIndex: int
+// emojiList: list
 class EmojiBoard extends Component {
 
-  constructor(props) {
-    super(props);
-    // const this.messageIndex = props.messageIndex; //int
-    // const emojiList = props.emojiList;    //list
-  }
-
-
+  // we need to make key depend on the props which are changing, or it won't re-render
+  // seems to be a react bug
+  // see https://stackoverflow.com/questions/45445724/component-in-react-doesnt-render-when-in-map-function/46311414#46311414
   render() {
-
-    const emojis = this.props.emojiList.map( (emoji,index) =>
-      <EmojiCell value={emoji} selected={this.props.messageIndex == index}/>
+    const messageIndex = this.props.messageIndex;
+    const emojis = this.props.emojiList.map((emoji,index) =>
+      <EmojiCell
+        onClick={() => {
+          this.props.onEmojiClick && this.props.onEmojiClick(index);
+        }}
+        key={emoji.toString() + messageIndex}
+        selected={messageIndex === index}
+        value={emoji}
+      />
     );
 
     return (
-      <div class="EmojiBoard">
+      <div className="EmojiBoard">
         {emojis}
       </div>
     );

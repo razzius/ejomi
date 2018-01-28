@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import ReconnectingWebsocket from 'reconnecting-websocket'
 
 import './App.css';
-import Messenger from './Messenger.react';
+import Lobby from './components/Lobby.react';
+import Messenger from './components/Messenger.react';
 import Scrambler from './components/Scrambler.react';
 import Voter from './components/Voter.react';
-import EmojiBoard from './components/EmojiBoard.react';
-import Message from './components/Message.react';
 
 const PAGES = {
+  LOBBY: 'LOBBY',
   MESSENGER: 'MESSENGER',
   SCRAMBLER: 'SCRAMBLER',
   VOTER: 'VOTER',
@@ -36,12 +36,22 @@ function handleMessage(message) {
   reader.onload = () => {
     const data = JSON.parse(reader.result)
 
-    console.log(`Received ${JSON.stringify(data)}`)
+    console.log('Received', data);
 
-    if (data.type === 'receive_emoji') {
-      var updatedState = this.state
-      updatedState['emoji'] = message.emoji
-      this.setState(updatedState)
+    if (data.type === 'start') {
+      this.setState({
+        currentPage: PAGES.MESSENGER,
+        emoji: data.emoji,
+      });
+    } else if (data.type === 'welcome') {
+      this.setState({
+        userId: data._user_id,
+        users: data.bootstrap_state.users,
+      });
+    } else if (data.type === 'update_users') {
+      this.setState({
+        users: data.users,
+      });
     }
   }
 
@@ -55,7 +65,10 @@ class App extends Component {
 
     this.state = {
       currentPage: DEFAULT_PAGE,
+      emoji: ['😂','😄','😃','😀','😊','😉','😍','😘','😚','😗'],
       selectedEmojiIndex: 5,
+      userId: -1,
+      users: [],
     };
 
     const protocol = getWsProtocol()
@@ -75,36 +88,50 @@ class App extends Component {
   }
 
   render() {
+    console.log("State: ", this.state);
     const {
       currentPage,
+      emoji,
       selectedEmojiIndex,
+      userId,
+      users,
     } = this.state;
 
     let pageComponent = null;
-    if (currentPage === PAGES.MESSENGER) {
-      pageComponent = <Messenger selectedEmojiIndex={this.state.selectedEmojiIndex} timerSeconds={30} />;
-    } else if (currentPage === PAGES.SCRAMBLER) {
-      pageComponent = <Scrambler message={'flagfllagg'}/>;
-    } else if (currentPage === PAGES.VOTER) {
-      pageComponent = <Voter scrambledMessage={'w'} />;
-    }
-
-    const array = ['😂','😄','😃','😀','😊','😉','😍','😘','😚','😗' ];
-
-    return (
-      <div className="App">
+    if (currentPage === PAGES.LOBBY) {
+      pageComponent =
         <div>
-          <h4>Debug actions</h4>
+          <p>userId: {userId}</p>
           <input ref={input => {this.input = input}} />
           <button onClick={this.handleJoin.bind(this)}>join</button>
           <button onClick={this.handleStart.bind(this)}>start</button>
-          <div>{this.emoji}</div>
-        </div>
+          <h5>Users:</h5>
+          <Lobby userList={users}/>
+        </div>;
+    } else if (currentPage === PAGES.MESSENGER) {
+      pageComponent =
+        <Messenger
+          emojiList={emoji}
+          selectedEmojiIndex={selectedEmojiIndex}
+          timerSeconds={30}
+        />;
+    } else if (currentPage === PAGES.SCRAMBLER) {
+      pageComponent = <Scrambler message={'flagfllagg'}/>;
+    } else if (currentPage === PAGES.VOTER) {
+      pageComponent = (
+        <Voter
+          emojiList={emoji}
+          scrambledMessage={'w'}
+        />
+      );
+    }
+
+    return (
+      <div className="App">
         <p>
           Current Page: {currentPage}
         </p>
         {pageComponent}
-        <EmojiBoard messageIndex={1} emojiList={array} counterIndex={4} />
       </div>
     );
   }

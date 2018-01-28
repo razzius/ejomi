@@ -8,12 +8,12 @@ class Clock extends Component {
       currentTimeRemaining: 20,
     }
 
-    let timer = setInterval(this.tick, 1000);
+    setInterval(this.tick, 1000);
   }
 
   tick = () => {
     this.setState({
-        currentTimeRemaining: this.state.currentTimeRemaining - 1
+        currentTimeRemaining: Math.max(this.state.currentTimeRemaining - 1, 0)
     });
   }
 
