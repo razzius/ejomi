@@ -90,7 +90,7 @@ class Message extends Component {
   }
 
   getPositions(text) {
-    const tcanvas = this.refs.tcanvas;
+    const tcanvas = document.createElement("canvas");
     const tctx = tcanvas.getContext("2d");
     tcanvas.width = this.W;
     tcanvas.height = this.H;
@@ -159,7 +159,6 @@ class Message extends Component {
     return (
       <div>
         <canvas ref="canvas" width="60" height="100"></canvas>
-        <canvas ref="tcanvas" width="60" height="100"></canvas>
       </div>
     );
   }
