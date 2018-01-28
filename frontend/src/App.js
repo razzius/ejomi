@@ -31,6 +31,7 @@ function sendMessage(ws, message) {
 }
 
 function handleMessage(message) {
+  console.log("onmessage", message);
   const reader = new FileReader()
 
   reader.onload = () => {
@@ -46,7 +47,6 @@ function handleMessage(message) {
     } else if (data.type === 'welcome') {
       this.setState({
         userId: data._user_id,
-        users: data.bootstrap_state.users,
       });
     } else if (data.type === 'update_users') {
       this.setState({
@@ -77,8 +77,15 @@ class App extends Component {
 
     const protocol = getWsProtocol()
 
-    const ws = new ReconnectingWebsocket(`${protocol}${host}/socket`)
-    ws.onmessage = handleMessage.bind(this)
+    const ws = new ReconnectingWebsocket(`${protocol}${host}/socket`);
+    ws.onmessage = handleMessage.bind(this);
+    ws.onopen = (e) => {
+      console.log("opened", e);
+    }
+    ws.onclose = (e) => {
+      console.log("closed", e);
+    }
+    ws.debug = true;
 
     this.ws = ws
   }

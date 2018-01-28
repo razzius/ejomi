@@ -1,9 +1,7 @@
 import json
 import os
 import random
-import classes.GameInstance
-import classes.Guess
-import classes.Player
+from Models import *
 
 import gevent
 import redis
@@ -21,12 +19,17 @@ app.debug = 'DEBUG' in os.environ
 sockets = Sockets(app)
 redis = redis.from_url(REDIS_URL)
 
+# Global State
 current_round = 0
 clients = {}
+game_instances = []
+players = {}
 
 pubsub = redis.pubsub()
 pubsub.subscribe(REDIS_CHAN)
 
+def gen_random_id():
+    return id(object())
 
 def send(client, raw_data):
     try:
@@ -47,9 +50,11 @@ def publish_redis_messages_to_clients():
                 print(f'Sending to {data["_user_id"]}')
                 # race condition: user disconnects
                 user = [user for user in clients.keys() if id(user) == data['_user_id']][0]
+                print(f'publishing to {id(user)} only')
 
                 gevent.spawn(send, user, json.dumps(data).encode())
             else:
+                print(f'publishing to all {len(clients)} clients')
                 for client in clients.keys():
                     gevent.spawn(send, client, message['data'])
 
@@ -110,54 +115,67 @@ def start_game_timer():
 def index():
     return render_template('index.html')
 
+def make_emoji_list(n):
+    # ensure distinct emoji
+    emojis = set()
+    while len(emojis) < n:
+        emojis.add(random_emoji()[0])
+    return list(emojis)
 
-def emoji_string(n):
-    # TODO ensure distinct emoji
-    return ''.join(random_emoji()[0] for _ in range(n))
-
-def emoji_list(n):
-    # TODO ensure distinct emoji
-    return [random_emoji()[0] for _ in range(n)]
+def broadcast_state():
+    notify_all({
+        'type': 'state_update',
+        'users': {id(client): player.to_dict() for (client, player) in players.items()}
+    })
 
 def handle_message(client, data):
     if data['type'] == 'join':
+        player = Player(client, data['username'])
+        players[id(client)] = player
+        broadcast_state()
 
-        username = data['username']
-        clients[client]['username'] = username
-
-        notify_all({
-            'type': 'update_users',
-            'users': [client_data['username'] or id(client) for client, client_data in clients.items()]
-        })
     elif data['type'] == 'start':
-        s = emoji_list(10)
+        if len(players) < 3:
+            raise Exception("Not enough players")
 
-        print(f'Starting game with string {s} and {len(clients)} clients')
+        player_ids = players.keys()
+        derangement = player_ids
+        while any(x == y for (x,y) in zip(player_ids, derangement)):
+            random.shuffle(derangement)
 
-        notify_all({
-            'type': 'start',
-            'emoji': s,
-        })
+        for ((messenger_id, player), scrambler_id) in zip(players.items(), derangement):
+            emojis = make_emoji_list(n)
+            game = GameInstance(emojis, messenger_id, scrambler_id)
 
-        # TODO keep track of this user being messenger
-        print(f'Clients: {clients}')
 
-        # messenger_user = random.choice(list(clients.keys()))
-
-        # Generate a list of randomly shuffled users
-        client_list = list(clients)
-        random.shuffle(client_list)
-
-        for index,client in enumerate(client_list):
-            goal = random.randint(0, 10)
-            notify_user(client, {
-                'type': 'messenger',
-                'goal': goal
-            })
-            clients[client]['goal'] = goal
-            clients[client]['index'] = index
-
-        gevent.spawn(start_game_timer)
+        # s = emoji_list(10)
+        #
+        # print(f'Starting game with string {s} and {len(clients)} clients')
+        #
+        # notify_all({
+        #     'type': 'start',
+        #     'emoji': s,
+        # })
+        #
+        # # TODO keep track of this user being messenger
+        # print(f'Clients: {clients}')
+        #
+        # # messenger_user = random.choice(list(clients.keys()))
+        #
+        # # Generate a list of randomly shuffled users
+        # client_list = list(clients)
+        # random.shuffle(client_list)
+        #
+        # for index,client in enumerate(client_list):
+        #     goal = random.randint(0, 10)
+        #     notify_user(client, {
+        #         'type': 'messenger',
+        #         'goal': goal
+        #     })
+        #     clients[client]['goal'] = goal
+        #     clients[client]['index'] = index
+        #
+        # gevent.spawn(start_game_timer)
 
 
     # The clue that the hinter suggests
@@ -203,13 +221,10 @@ def notify_user(client, data):
     data['_user_id'] = id(client)
     redis.publish(REDIS_CHAN, json.dumps(data))
 
-def get_bootstrap_state():
-    return {
-        'users': [client_data['username'] or id(client) for client, client_data in clients.items()],
-    }
-
 @sockets.route('/socket')
 def handle_websocket(client):
+    print(f'Got connection from {id(client)}')
+
     clients[client] = {
         'username': None,
         'guess': {}
@@ -217,16 +232,17 @@ def handle_websocket(client):
 
     message = {
         'type': 'welcome',
-        'bootstrap_state': get_bootstrap_state(),
         '_user_id': id(client)
     }
+
+    # broadcast_state()
 
     notify_user(client, message)
 
     while not client.closed:
         message = client.receive()
         if message is None:
-            print('Got none message')
+            print(f'Got none message, closing {id(client)}')
             del clients[client]
         else:
             data = json.loads(message)
