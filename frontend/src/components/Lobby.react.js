@@ -47,7 +47,7 @@ class Lobby extends Component {
         <button type="submit" className="inputButton">Join</button>
       </form> : null;
 
-    const startButton = this.props.showStart ?
+    const startButton = this.props.showStart && !this.state.showJoin?
     <div>
       <button onClick={this.props.onStart}>Start</button>
     </div> : null;

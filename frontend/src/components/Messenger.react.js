@@ -8,9 +8,9 @@ import Clock from './Clock.react';
 class Messenger extends Component {
 
   render() {
-    const prompt = "Using " + this.props.characterLimit + " letters, describe only the selected emoji." +
-    " Other players will guess which emoji you're describing. " +
-    "The catch is, another player will swap some letters before the other players see your message."
+    const prompt = "Use " + this.props.characterLimit + " letters to describe the selected emoji." +
+    " Other players will guess which emoji you're describing "+
+    "BUT another player will swap some letters before they see your message."
     return (
       <div>
         <EmojiBoard
