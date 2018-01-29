@@ -22,7 +22,9 @@ class Lobby extends Component {
     return <p className="userInList" key={name} style={style}>{name}</p>;
   }
 
-  _onJoin = () => {
+  _onJoin = (e) => {
+    e.preventDefault()
+
     if (this.input.value.length === 0) {
       return;
     }
