@@ -84,7 +84,7 @@ def send(client, raw_data):
 
 def publish_redis_messages_to_clients():
     for message in pubsub.listen():
-        print(f'publish message {message}')
+        app.logger.info(f'Pubsub: {message}')
 
         if message['type'] == 'message':
             data = json.loads(message['data'])
