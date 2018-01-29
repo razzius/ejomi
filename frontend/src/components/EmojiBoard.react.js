@@ -6,9 +6,9 @@ function EmojiCell(props) {
   const voterNames = getVoterNames(props)
   let voterHtml = "";
 
-for (var i = 0; i < voterNames.length; i++) {
-      voterHtml += voterNames[i] + " "
-  }
+  for (var i = 0; i < voterNames.length; i++) {
+        voterHtml += voterNames[i] + " "
+    }
   return (
       <div onClick={props.onClick}
         className={classNames}>
@@ -16,6 +16,28 @@ for (var i = 0; i < voterNames.length; i++) {
         <span className='voterName'>{voterHtml} </span>
       </div>
   );
+}
+
+function randomizedCells(props) {
+  const goalEmojiIndex = props.goalEmojiIndex;
+  const emojis = props.emojiList.map((emoji,index) =>
+    <EmojiCell
+      onClick={() => {
+        props.onEmojiClick && props.onEmojiClick(index);
+      }}
+      key={emoji.toString() + goalEmojiIndex}
+      selected={goalEmojiIndex === index}
+      value={emoji}
+      votes={props.votes}
+      users={props.users}
+      index={index}
+    />
+  );
+  const shiftAmount = Math.random() * emojis.length + 1;
+  for (var i = 0; i < shiftAmount; i++) {
+    emojis.push(emojis.shift());
+  }
+  return emojis;
 }
 
 function getVoterNames(props) {
@@ -47,24 +69,9 @@ class EmojiBoard extends Component {
   // seems to be a react bug
   // see https://stackoverflow.com/questions/45445724/component-in-react-doesnt-render-when-in-map-function/46311414#46311414
   render() {
-    const goalEmojiIndex = this.props.goalEmojiIndex;
-    const emojis = this.props.emojiList.map((emoji,index) =>
-      <EmojiCell
-        onClick={() => {
-          this.props.onEmojiClick && this.props.onEmojiClick(index);
-        }}
-        key={emoji.toString() + goalEmojiIndex}
-        selected={goalEmojiIndex === index}
-        value={emoji}
-        votes={this.props.votes}
-        users={this.props.users}
-        index={index}
-      />
-    );
-
     return (
       <div className="board">
-        {emojis}
+        {randomizedCells(this.props)}
       </div>
     );
   }
