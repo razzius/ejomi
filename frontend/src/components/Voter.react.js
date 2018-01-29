@@ -40,7 +40,6 @@ class Voter extends Component {
       specialRoleText = "Your original message was ";
     }
     console.log('Voter', allowedToVote, isMessenger, isScrambler);
-    console.log(this.state.selectedEmojiIndex);
     return (
       <div>
         <EmojiBoard
