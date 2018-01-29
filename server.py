@@ -220,6 +220,9 @@ def start_game_timer():
 
         gevent.sleep(TIMES[state['current_stage']])
 
+        state['current_vote'] = state['current_vote'] + 1
+        set_state(state)
+
     reset_game()
 
 
