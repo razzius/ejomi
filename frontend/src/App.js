@@ -219,7 +219,7 @@ class App extends Component {
           originalMessage={game.message}
           scrambledMessage={game.scrambled_message}
           votes={game.votes}
-          users={this.state.users}
+          users={this._getState().users}
         />
       );
     }

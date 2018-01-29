@@ -3,25 +3,41 @@ import React, { Component } from 'react';
 function EmojiCell(props) {
   const classNames = "emojiCell" + (props.selected ? " selected" : "")
   const voterNames = getVoterNames(props)
+  let voterHtml = "";
+
+for (var i = 0; i < voterNames.length; i++) {
+      voterHtml += voterNames[i] + " "
+  }
   return (
-    <div onClick={props.onClick}
-      className = {classNames}>
-      {props.value}
-    </div>
+      <div onClick={props.onClick}
+        className={classNames}>
+        {props.value}
+        <span className='voterName'>{voterHtml} </span>
+      </div>
   );
 }
 
-
 function getVoterNames(props) {
   const voterNames = []
-  console.log(props.votes);
-  for (let vote in props.votes) {
-    console.log(vote);
-    if (vote.selectedEmojiIndex === props.index) {
-      voterNames.push(props.users[vote.userId].username)
+  for (let userId in props.votes) {
+    if (props.votes[userId] === props.index) {
+      const username = getNameForId(userId, props.users);
+      if (username) {
+        console.log("adding " + username)
+        voterNames.push(username)
+      }
     }
   }
   return voterNames;
+}
+
+function getNameForId(userId, users) {
+  for (let user in users) {
+    if (user === userId) {
+      return users[user].username;
+    }
+  }
+  return undefined;
 }
 
 class EmojiBoard extends Component {
