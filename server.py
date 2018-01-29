@@ -24,8 +24,6 @@ app = Flask(
 
 app.debug = 'DEBUG' in os.environ
 
-SERVER_NAME = '172.20.10.12' # if not app.debug else 'localhost'
-
 sockets = Sockets(app)
 redis = redis.from_url(REDIS_URL)
 
