@@ -1,15 +1,8 @@
 import React, { Component } from 'react';
 import EmojiBoard from './EmojiBoard.react';
-import RevealingLetter from './RevealingLetter.react';
 import RevealingMessage from './RevealingMessage.react';
-import Clock from './Clock.react';
 
 class Revealer extends Component {
-
-  constructor(props) {
-    super(props);
-
-  }
 
   render() {
     this.letterPairs = [];
@@ -28,16 +21,8 @@ class Revealer extends Component {
           users={this.props.users}
            />
       <RevealingMessage letterPairs={this.letterPairs}/>
-      <p> Original </p>
-      <p> {this.props.originalMessage} </p>
-      <p> Scrambled </p>
-      <p> {this.props.scrambledMessage} </p>
-      <div>
-          {this.letterPairs.map(function(letters, index){
-            return <RevealingLetter originalLetter={letters.originalLetter} scrambledLetter={letters.scrambledLetter}/>;
-          })}
-      </div>
-      <Clock timerSeconds={this.props.timerSeconds} />
+      <p> The messenger was {this.props.users[this.props.messenger_id].username}. </p>
+      <p> And the scrambler was {this.props.users[this.props.scrambler_id].username}! </p>
     </div>
     );
   }
