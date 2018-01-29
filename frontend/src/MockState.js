@@ -1,5 +1,5 @@
 export default {
-   "currentStage":"VOTER",
+   "currentStage":"REVEALER",
    "currentVote":4575052520,
    "times":{
        'LOBBY': -1,
@@ -78,9 +78,7 @@ export default {
          "message":"3",
          "scrambled_message":"34",
          "votes":{
-           "4574773632":3,
-           "4574773840":3,
-           "4574774256":7
+
          }
       }
    },

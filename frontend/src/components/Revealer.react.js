@@ -1,10 +1,17 @@
 import React, { Component } from 'react';
 import EmojiBoard from './EmojiBoard.react';
 import RevealingMessage from './RevealingMessage.react';
+import Clock from './Clock.react';
 
 class Revealer extends Component {
 
+  constructor(props) {
+    super(props);
+  }
+
   render() {
+
+
     this.letterPairs = [];
     for(let i = 0; i < this.props.originalMessage.length; i++){
       let originalLetter = this.props.originalMessage.charAt(i);
@@ -23,7 +30,10 @@ class Revealer extends Component {
       <RevealingMessage letterPairs={this.letterPairs}/>
       <p> The messenger was {this.props.users[this.props.messenger_id].username}. </p>
       <p> And the scrambler was {this.props.users[this.props.scrambler_id].username}! </p>
+      <Clock timerSeconds={this.props.timerSeconds} />
+
     </div>
+
     );
   }
 }
