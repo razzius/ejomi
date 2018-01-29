@@ -218,13 +218,14 @@ class App extends Component {
         />;
     } else if (currentStage === PAGES.VOTER) {
       const game = games[currentVote];
-      const allowedToVote = game.messenger_id !== userId && game.scrambler_id !== userId;
       pageComponent = (
         <Voter
-          allowedToVote={allowedToVote}
+          isMessenger={game.messenger_id === userId}
+          isScrambler={game.scrambler_id === userId}
           emojiList={game.emoji_board}
           onSubmit={this._onSubmitVote}
           scrambledMessage={game.scrambled_message}
+          originalMessage={game.message}
           timerSeconds={times[currentStage]}
         />
       );
@@ -239,6 +240,8 @@ class App extends Component {
           timerSeconds={times[currentStage]}
           votes={game.votes}
           users={this._getState().users}
+          messenger_id={game.messenger_id}
+          scrambler_id={game.scrambler_id}
         />
       );
     }

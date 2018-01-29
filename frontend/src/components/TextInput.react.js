@@ -29,13 +29,8 @@ class TextInput extends Component {
     const value = event.target.value;
     const trimmed = value.substr(0, this.state.maxSize);
     this.setState({value: trimmed});
+    this.props.onSubmit && this.props.onSubmit(trimmed);
   };
-
-  _handleSubmit = (event) => {
-    console.log('submitted ' + this.state.value);
-    event.preventDefault();
-    this.props.onSubmit && this.props.onSubmit(this.state.value);
-  }
 
   render() {
     const referenceString = this.props.referenceString;
@@ -55,11 +50,10 @@ class TextInput extends Component {
     }
 
     return (
-      <form onSubmit={this._handleSubmit}>
+      <form>
         <label>
           <input type="text" value={value} onChange={this._handleChange} placeholder = {this.props.placeHolder}/>
         </label>
-        <button>Submit</button>
         {warning}
       </form>
     );

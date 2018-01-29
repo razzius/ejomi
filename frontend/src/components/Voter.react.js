@@ -18,34 +18,44 @@ class Voter extends Component {
     this.setState({
       selectedEmojiIndex: emojiIndex,
     });
+    const onSubmit = this.props.onSubmit;
+    onSubmit && onSubmit(emojiIndex);
   }
 
   render() {
     const {
-      allowedToVote,
+      isMessenger,
+      isScrambler,
       emojiList,
-      onSubmit,
       scrambledMessage,
+      originalMessage,
       timerSeconds,
     } = this.props;
 
+    const allowedToVote = !isMessenger && !isScrambler;
+    let specialRoleText = null;
+    if (isScrambler) {
+      specialRoleText = "You scrambled the original message: ";
+    } else if (isMessenger) {
+      specialRoleText = "Your original message was ";
+    }
     return (
       <div>
-        <p>
-          {"Scrambled Message: " + scrambledMessage}
-        </p>
         <EmojiBoard
           emojiList={emojiList}
           onEmojiClick={allowedToVote && this._onEmojiClick}
           goalEmojiIndex={allowedToVote && this.state.selectedEmojiIndex}
         />
+        <p>
+          {"Scrambled Message: " + scrambledMessage}
+        </p>
         {allowedToVote
-          ? <button
-              onClick={() => onSubmit(this.state.selectedEmojiIndex)}>
-              Submit Vote
-            </button>
+          ? null
           : <p>Waiting for other players to vote...</p>
         }
+        <p className="specialRoleText">{specialRoleText}
+          <span className="bold"> {originalMessage}</span>
+        </p>
         <Clock timerSeconds={timerSeconds} />
       </div>
 
