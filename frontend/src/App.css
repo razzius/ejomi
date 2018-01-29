@@ -3,7 +3,7 @@
 }
 
 
-.inputBox {
+input {
   width: 20%;
   min-width: 200px;
   padding: 10px 5px;
@@ -42,9 +42,10 @@ button {
 }
 
 .prompt {
-  width:500px;
-  margin:0 auto;
-  font-size: 15px;
+  width: 90%;
+  max-width:500px;
+  margin:10px auto;
+  font-size: 16px;
 }
 
 .userList {
