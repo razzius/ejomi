@@ -19,13 +19,20 @@ const PAGES = {
 
 const SHOULD_MOCK_STATE = false;
 
+const PROD = window.location.protocol === 'https:'
 // print extra logging
 const DEBUG_MODE = false;
 
-const host = window.location.host
+function getHost() {
+  if (PROD) {
+    return window.location.host
+  } else {
+    return 'localhost:8000'
+  }
+}
 
 function getWsProtocol() {
-  if (window.location.protocol === 'https:') {
+  if (PROD) {
     return 'wss://'
   } else {
     return 'ws://'
@@ -91,7 +98,7 @@ class App extends Component {
 
     const protocol = getWsProtocol()
 
-    const ws = new ReconnectingWebsocket(`${protocol}${host}/socket`);
+    const ws = new ReconnectingWebsocket(`${protocol}${getHost()}/socket`);
     ws.onmessage = handleMessage.bind(this);
     if (DEBUG_MODE) {
       ws.onopen = (e) => {
