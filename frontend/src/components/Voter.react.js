@@ -39,6 +39,7 @@ class Voter extends Component {
     } else if (isMessenger) {
       specialRoleText = "Your original message was ";
     }
+    console.log('Voter', allowedToVote, isMessenger, isScrambler);
     return (
       <div>
         <EmojiBoard
@@ -49,13 +50,14 @@ class Voter extends Component {
         <RevealingMessage state="voter" originalMessage={this.props.scrambledMessage} scrambledMessage={this.props.scrambledMessage}/>
         {allowedToVote
           ? null
-          : <div>
+          : (
+          <div>
             <p>Waiting for other players to vote...</p>
             <p className="specialRoleText">{specialRoleText}
               <span className="bold"> {originalMessage}</span>
             </p>
           </div>
-        }
+        )}
 
         <Clock timerSeconds={timerSeconds} />
       </div>
