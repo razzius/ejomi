@@ -96,12 +96,12 @@ def set_state(state):
 
 
 def delete_client(client):
-    client_id = id(client)
+    client_id = str(id(client))
     print(f"deleting client {client_id}")
 
     state = get_state()
 
-    if state['current_stage'] == Stages.LOBBY.name and str(client_id) in state['players']:
+    if state['current_stage'] == Stages.LOBBY.name and client_id in state['players']:
         del state['players'][str(client_id)]
 
     if client in clients:
@@ -129,7 +129,7 @@ def publish_redis_messages_to_clients():
             if '_user_id' in data:
                 print(f'Sending to {data["_user_id"]}')
                 try:
-                    user = next(user for user in clients if id(user) == data['_user_id'])
+                    user = next(user for user in clients if str(id(user)) == data['_user_id'])
                 except StopIteration:
                     print(f'{data["_user_id"]} not on this server')
                     continue
@@ -239,8 +239,7 @@ def make_emoji_list(n):
 def broadcast_state():
     state = get_state()
 
-    print(clients)
-    print([id(client) for client in clients])
+    print(f'Client ids: {[id(client) for client in clients]}')
 
     games = state['games']
     players = state['players']
@@ -258,7 +257,7 @@ def broadcast_state():
 
 
 def handle_message(client, data):
-    client_id = id(client)
+    client_id = str(id(client))
     print(f'handle_message from {client_id} with data {data}')
 
     if data['type'] == 'join':
@@ -359,13 +358,13 @@ def notify_all(data):
 
 def notify_user(client, data):
     # Uses _user_id as a hidden field to restrict only send to single user
-    data['_user_id'] = id(client)
+    data['_user_id'] = str(id(client))
     redis.publish(REDIS_CHAN, json.dumps(data))
 
 
 @sockets.route('/socket')
 def handle_websocket(client):
-    client_id = id(client)
+    client_id = str(id(client))
     print(f'Got connection from {client_id}')
 
     clients.append(client)
