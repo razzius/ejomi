@@ -9,7 +9,6 @@ class RevealingMessage extends Component {
 
     this.textToDisplay = {
       'original': "And the original message was... ",
-      // 'specialRole': "The scrambled message is",
       'voter': null
     }
   }

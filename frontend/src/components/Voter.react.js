@@ -9,7 +9,7 @@ class Voter extends Component {
     super(props);
 
     this.state = {
-      selectedEmojiIndex: 0,
+      selectedEmojiIndex: -1,
     };
 
   }
@@ -40,12 +40,13 @@ class Voter extends Component {
       specialRoleText = "Your original message was ";
     }
     console.log('Voter', allowedToVote, isMessenger, isScrambler);
+    console.log(this.state.selectedEmojiIndex);
     return (
       <div>
         <EmojiBoard
           emojiList={emojiList}
           onEmojiClick={allowedToVote && this._onEmojiClick}
-          goalEmojiIndex={allowedToVote && this.state.selectedEmojiIndex}
+          goalEmojiIndex={allowedToVote && this.state.selectedEmojiIndex > -1 && this.state.selectedEmojiIndex}
         />
         {allowedToVote ? <p>Select the emoji above described by: </p> : null}
         <RevealingMessage state="voter" originalMessage={this.props.scrambledMessage} scrambledMessage={this.props.scrambledMessage}/>
