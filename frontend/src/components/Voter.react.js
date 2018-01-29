@@ -51,11 +51,14 @@ class Voter extends Component {
         </p>
         {allowedToVote
           ? null
-          : <p>Waiting for other players to vote...</p>
+          : <div>
+            <p>Waiting for other players to vote...</p>
+            <p className="specialRoleText">{specialRoleText}
+              <span className="bold"> {originalMessage}</span>
+            </p>
+          </div>
         }
-        <p className="specialRoleText">{specialRoleText}
-          <span className="bold"> {originalMessage}</span>
-        </p>
+
         <Clock timerSeconds={timerSeconds} />
       </div>
 
