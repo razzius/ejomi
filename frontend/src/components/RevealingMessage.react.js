@@ -9,7 +9,8 @@ class RevealingMessage extends Component {
 
     this.textToDisplay = {
       'original': "And the original message was... ",
-      'voter': null
+      'voter': null,
+      'ejomi': null,
     }
   }
 
@@ -18,7 +19,10 @@ class RevealingMessage extends Component {
     for(let i = 0; i < this.props.originalMessage.length; i++){
       let originalLetter = this.props.originalMessage.charAt(i);
       let scrambledLetter = this.props.scrambledMessage.charAt(i);
-      this.letterPairs.push({'originalLetter': originalLetter, 'scrambledLetter': scrambledLetter});
+      this.letterPairs.push({'originalLetter': originalLetter,
+                             'scrambledLetter': scrambledLetter,
+                             'mode': this.props.mode,
+                            });
     }
 
     return (
@@ -29,6 +33,7 @@ class RevealingMessage extends Component {
         <div className='revealingMessage'>
           {this.letterPairs.map(function(letters, index){
             return <RevealingLetter
+              mode={letters.mode}
               originalLetter={letters.originalLetter}
               scrambledLetter={letters.scrambledLetter}
             />;

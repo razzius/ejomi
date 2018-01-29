@@ -8,6 +8,7 @@ import Scrambler from './components/Scrambler.react';
 import Voter from './components/Voter.react';
 import Revealer from './components/Revealer.react';
 import MockState from './MockState';
+import RevealingMessage from './components/RevealingMessage.react'
 
 const PAGES = {
   LOBBY: 'LOBBY',
@@ -243,7 +244,12 @@ class App extends Component {
 
     return (
       <div className="App">
-        <h1>EJOMI</h1>
+        <RevealingMessage
+          mode="back_and_forth"
+          state="ejomi"
+          originalMessage="EJOMI"
+          scrambledMessage="EMOJI"
+        />
         {pageComponent}
       </div>
     );

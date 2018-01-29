@@ -27,26 +27,32 @@ class RevealingLetter extends Component {
     this.originalLetter = this.props.originalLetter;
     this.scrambledLetter = this.props.scrambledLetter;
 
-    let positions = this.getPositions(this.scrambledLetter)
+    this.transition(this.scrambledLetter, this.originalLetter)
+  }
+
+  transition = (from_char, to_char) => {
+    let positions = this.getPositions(from_char)
     this.setPositions(this.particles, positions)
 
-    this.displayText(this.scrambledLetter);
-    if(this.originalLetter != this.scrambledLetter){
-      setTimeout(this.drawToNewPositions, 2000);
+    this.displayText(from_char);
+    if(from_char !== to_char){
+      setTimeout(this.drawToNewPositions, 2000, from_char, to_char);
     }
   }
 
-  startTransitionDraw() {
+  startTransitionDraw(from_char, to_char) {
     this.drawTimer= setInterval(
-      () => this.draw(),
+      () => this.draw(from_char, to_char),
       30
     );
   }
 
-  stopTransitionDraw() {
+  stopTransitionDraw(from_char, to_char) {
     clearInterval(this.drawTimer);
-    this.displayText(this.originalLetter);
-    //setTimeout(this.drawToNewPositions, 2000);
+    this.displayText(to_char);
+    if(this.props.mode == "back_and_forth"){
+      setTimeout(this.transition, 1000, to_char, from_char);
+    }
   }
 
   displayText(text) {
@@ -58,7 +64,7 @@ class RevealingLetter extends Component {
     this.ctx.fillText(text, 30, 100);
   }
 
-  draw() {
+  draw(from_char, to_char) {
     this.ctx.globalCompositeOperation = "source-over";
     this.ctx.globalAlpha = 1.0;
     this.ctx.fillStyle = "white";
@@ -87,7 +93,7 @@ class RevealingLetter extends Component {
         particles[i].orig_y = particles[i].target_y;
 
       }
-      this.stopTransitionDraw();
+      this.stopTransitionDraw(from_char, to_char);
     }
   }
 
@@ -133,9 +139,8 @@ class RevealingLetter extends Component {
     }
   }
 
-  drawToNewPositions = () => {
-    const text = this.originalLetter;
-    let positions = this.getPositions(text)
+  drawToNewPositions = (from_char, to_char) => {
+    let positions = this.getPositions(to_char)
 
     for (let i = 0; i < this.particles.length; i++) {
       if( i < positions.length){ 
@@ -145,7 +150,7 @@ class RevealingLetter extends Component {
     }
 
     this.transition_draw_step = 0;
-    this.startTransitionDraw()
+    this.startTransitionDraw(from_char, to_char)
   }
 
   shuffle(a) {

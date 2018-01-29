@@ -42,7 +42,12 @@ class Revealer extends Component {
           votes={this.props.votes}
           users={this.props.users}
            />
-      <RevealingMessage state="original" originalMessage={this.props.originalMessage} scrambledMessage={this.props.scrambledMessage}/>
+      <RevealingMessage
+        mode="transition_once"
+        state="original"
+        originalMessage={this.props.originalMessage}
+        scrambledMessage={this.props.scrambledMessage}
+      />
       <p> {this.messenger_text} </p>
       <p> {this.scrambler_text} </p>
       <Clock timerSeconds={this.props.timerSeconds} />
