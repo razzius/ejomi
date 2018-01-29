@@ -52,7 +52,8 @@ class TextInput extends Component {
     return (
       <form>
         <label>
-          <input type="text" value={value} onChange={this._handleChange} placeholder = {this.props.placeHolder}/>
+          <input type="text" value={value} onChange={this._handleChange} placeholder = {this.props.placeHolder}
+          autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"/>
         </label>
         {warning}
       </form>
