@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import EmojiBoard from './EmojiBoard.react';
 import RevealingLetter from './RevealingLetter.react';
+import Clock from './Clock.react';
 
 class Revealer extends Component {
 
@@ -34,6 +35,7 @@ class Revealer extends Component {
             return <RevealingLetter originalLetter={letters.originalLetter} scrambledLetter={letters.scrambledLetter}/>;
           })}
       </div>
+      <Clock timerSeconds={this.props.timerSeconds} />
     </div>
     );
   }

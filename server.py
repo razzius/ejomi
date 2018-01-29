@@ -29,10 +29,13 @@ SERVER_NAME = '172.20.10.12' # if not app.debug else 'localhost'
 sockets = Sockets(app)
 redis = redis.from_url(REDIS_URL)
 
-MESSENGER_TIME = 20
-SCRAMBLER_TIME = 20
-VOTER_TIME = 20
-REVEALER_TIME = 20
+TIMES = {
+    'LOBBY': -1,
+    'MESSENGER': 60,
+    'SCRAMBLER' : 45,
+    'VOTER' : 20,
+    'REVEALER' : 15
+}
 
 # Game Stages
 class Stages(Enum):
@@ -125,8 +128,7 @@ def update_scores():
     pass
 
 def reset_game():
-    global clients, game_instances, players, current_stage, current_vote
-    clients = {}
+    global game_instances, players, current_stage, current_vote
     game_instances = {}
     players = {}
     current_stage = Stages.LOBBY
@@ -139,22 +141,21 @@ def start_game_timer():
     current_stage = Stages.MESSENGER
     broadcast_state()
 
-    gevent.sleep(MESSENGER_TIME)
+    gevent.sleep(TIMES[current_stage.name])
 
     current_stage = Stages.SCRAMBLER
     broadcast_state()
 
-    gevent.sleep(SCRAMBLER_TIME)
+    gevent.sleep(TIMES[current_stage.name])
 
     for game_id in game_instances:
         current_stage = Stages.VOTER
         current_vote = game_id
         broadcast_state()
-        gevent.sleep(VOTER_TIME)
+        gevent.sleep(TIMES[current_stage.name])
         current_stage = Stages.REVEALER
         broadcast_state()
-        gevent.sleep(REVEALER_TIME)
-
+        gevent.sleep(TIMES[current_stage.name])
 
     reset_game()
 
@@ -183,6 +184,7 @@ def make_emoji_list(n):
 def broadcast_state():
     notify_all({
         'current_stage': current_stage.name,
+        'times': TIMES,
         'current_vote': current_vote,
         'type': 'state_update',
         'games': {k: v.to_dict() for (k, v) in game_instances.items()},

@@ -1,6 +1,12 @@
 export default {
-   "currentStage":"REVEALER",
+   "currentStage":"VOTER",
    "currentVote":4575052520,
+   "times":{
+       'LOBBY': -1,
+       'MESSENGER': 60,
+       'SCRAMBLER' : 45,
+       'VOTER' : 20,
+       'REVEALER' :15},
    "games":{
       "4575053024":{
          "messenger_id":4574773632,
