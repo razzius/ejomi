@@ -10,16 +10,14 @@ class Revealer extends Component {
     }
   }
 
-  componentDidMount() {
+  render() {
     this.letterPairs = [];
     for(let i = 0; i < this.props.originalMessage.length; i++){
       let originalLetter = this.props.originalMessage.charAt(i);
       let scrambledLetter = this.props.scrambledMessage.charAt(i);
       this.letterPairs.push({'originalLetter': originalLetter, 'scrambledLetter': scrambledLetter});
     }
-  }
 
-  render() {
     return (
       <div>
         <EmojiBoard
