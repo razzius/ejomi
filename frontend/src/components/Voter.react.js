@@ -46,13 +46,7 @@ class Voter extends Component {
           onEmojiClick={allowedToVote && this._onEmojiClick}
           goalEmojiIndex={allowedToVote && this.state.selectedEmojiIndex}
         />
-<<<<<<< HEAD
-        <p>
-          {"Scrambled Message: " + scrambledMessage}
-        </p>
-=======
         <RevealingMessage state="voter" originalMessage={this.props.scrambledMessage} scrambledMessage={this.props.scrambledMessage}/>
->>>>>>> claire
         {allowedToVote
           ? null
           : <div>
