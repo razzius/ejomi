@@ -18,6 +18,8 @@ class Voter extends Component {
     this.setState({
       selectedEmojiIndex: emojiIndex,
     });
+    const onSubmit = this.props.onSubmit;
+    onSubmit && onSubmit(emojiIndex);
   }
 
   render() {
@@ -25,7 +27,6 @@ class Voter extends Component {
       isMessenger,
       isScrambler,
       emojiList,
-      onSubmit,
       scrambledMessage,
       originalMessage,
       timerSeconds,
@@ -49,10 +50,7 @@ class Voter extends Component {
           {"Scrambled Message: " + scrambledMessage}
         </p>
         {allowedToVote
-          ? <button
-              onClick={() => onSubmit(this.state.selectedEmojiIndex)}>
-              Submit Vote
-            </button>
+          ? null
           : <p>Waiting for other players to vote...</p>
         }
         <p className="specialRoleText">{specialRoleText}
