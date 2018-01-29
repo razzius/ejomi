@@ -19,20 +19,18 @@ const PAGES = {
 
 const SHOULD_MOCK_STATE = false;
 
-const PROD = window.location.protocol === 'https:'
-// print extra logging
-const DEBUG_MODE = false;
+const DEBUG = process.env.NODE_ENV === 'development'
 
 function getHost() {
-  if (PROD) {
-    return window.location.host
-  } else {
+  if (DEBUG) {
     return 'localhost:8000'
+  } else {
+    return window.location.host
   }
 }
 
 function getWsProtocol() {
-  if (PROD) {
+  if (window.location.protocol === 'https:') {
     return 'wss://'
   } else {
     return 'ws://'
@@ -44,7 +42,7 @@ function sendMessage(ws, message) {
 }
 
 function handleMessage(message) {
-  if (DEBUG_MODE) {
+  if (DEBUG) {
     console.log("onmessage", message);
   }
   const reader = new FileReader()
@@ -97,11 +95,9 @@ class App extends Component {
       users: {},
     };
 
-    const protocol = getWsProtocol()
-
-    const ws = new ReconnectingWebsocket(`${protocol}${getHost()}/socket`);
+    const ws = new ReconnectingWebsocket(`${getWsProtocol()}${getHost()}/socket`);
     ws.onmessage = handleMessage.bind(this);
-    if (DEBUG_MODE) {
+    if (DEBUG) {
       ws.onopen = (e) => {
         console.log("opened", e);
       }
