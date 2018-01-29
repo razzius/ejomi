@@ -239,6 +239,8 @@ class App extends Component {
           timerSeconds={times[currentStage]}
           votes={game.votes}
           users={this._getState().users}
+          messenger_id={game.messenger_id}
+          scrambler_id={game.scrambler_id}
         />
       );
     }

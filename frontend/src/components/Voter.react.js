@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import EmojiBoard from './EmojiBoard.react';
-
+import RevealingMessage from './RevealingMessage.react';
 import Clock from './Clock.react';
 
 class Voter extends Component {
@@ -31,14 +31,12 @@ class Voter extends Component {
 
     return (
       <div>
-        <p>
-          {"Scrambled Message: " + scrambledMessage}
-        </p>
         <EmojiBoard
           emojiList={emojiList}
           onEmojiClick={allowedToVote && this._onEmojiClick}
           goalEmojiIndex={allowedToVote && this.state.selectedEmojiIndex}
         />
+        <RevealingMessage state="voter" originalMessage={this.props.scrambledMessage} scrambledMessage={this.props.scrambledMessage}/>
         {allowedToVote
           ? <button
               onClick={() => onSubmit(this.state.selectedEmojiIndex)}>

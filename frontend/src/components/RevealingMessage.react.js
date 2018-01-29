@@ -7,13 +7,9 @@ class RevealingMessage extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      transitioningTo: 'original',
-    }
-
     this.textToDisplay = {
-      'original': "Original message:",
-      'scrambled': "Scrambled message:",
+      'original': "And the original message was... ",
+      'voter': "The scrambled message is",
     }
   }
 
@@ -26,15 +22,18 @@ class RevealingMessage extends Component {
     }
 
     return (
-        <div>
-      <p>
-         {this.textToDisplay[this.state.transitioningTo]}
-      </p>
-      <div className='revealingMessage'>
-        {this.letterPairs.map(function(letters, index){
-          return <RevealingLetter originalLetter={letters.originalLetter} scrambledLetter={letters.scrambledLetter}/>;
-        })}
-      </div>
+      <div>
+        <p>
+          {this.textToDisplay[this.props.state]}
+        </p>
+        <div className='revealingMessage'>
+          {this.letterPairs.map(function(letters, index){
+            return <RevealingLetter 
+              originalLetter={letters.originalLetter} 
+              scrambledLetter={letters.scrambledLetter}
+            />;
+          })}
+        </div>
       </div>
     );
   }
