@@ -38,8 +38,8 @@ FAST_TIMES = {
 NORMAL_TIMES = {
     'LOBBY': -1,
     'MESSENGER': 45,
-    'SCRAMBLER' : 70,
-    'VOTER' : 60,
+    'SCRAMBLER': 60,
+    'VOTER' : 45,
     'REVEALER' : 25,
 }
 
