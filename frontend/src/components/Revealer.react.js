@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import EmojiBoard from './EmojiBoard.react';
 import RevealingLetter from './RevealingLetter.react';
+import RevealingMessage from './RevealingMessage.react';
 import Clock from './Clock.react';
 
 class Revealer extends Component {
