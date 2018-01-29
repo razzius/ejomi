@@ -26,7 +26,9 @@ class TextInput extends Component {
   }
 
   _handleChange = (event) => {
-    this.setState({value: event.target.value});
+    const value = event.target.value;
+    const trimmed = value.substr(0, this.state.maxSize);
+    this.setState({value: trimmed});
   };
 
   _handleSubmit = (event) => {

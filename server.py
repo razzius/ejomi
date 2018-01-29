@@ -225,11 +225,13 @@ def handle_message(client, data):
 
     # The clue that the hinter suggests
     elif data['type'] == 'hint':
-        hint = validate(data['hint'])
+        hint = data['hint']
         print(f'Received hint:{hint} from {client_id}')
 
         game = next(game for game in game_instances.values() if game.messenger_id == client_id)
         game.message = hint
+        # Set same hint as scrambled in case of disconnect
+        game.scrambled_message = hint
 
     # The scrambled hint
     elif data['type'] == 'scrambled_hint':
@@ -249,15 +251,6 @@ def handle_message(client, data):
 
     else:
         raise Exception('Unknown event {}'.format(data))
-
-# Takes in a hint and verifies the size limit
-# Returns the first 10 chars of hint if over limit, otherwise original hint
-def validate(hint):
-    return hint[:10]
-
-#TODO: Logic for verification
-def validate_scrambled(scrambled_hint,hint):
-    return hint[:10]
 
 def notify_all(data):
     redis.publish(REDIS_CHAN, json.dumps(data))
