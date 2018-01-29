@@ -53,6 +53,7 @@ function handleMessage(message) {
       });
     } else if (data.type === 'state_update') {
       this.setState({
+        times: data.times,
         currentStage: data.current_stage,
         currentVote: data.current_vote,
         games: data.games,
@@ -168,11 +169,11 @@ class App extends Component {
     console.log("State: ", state);
     const {
       currentStage,
+      times,
       currentVote,
       games,
       userId,
       users,
-      times,
     } = state;
 
     let pageComponent = null;

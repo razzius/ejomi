@@ -31,10 +31,10 @@ redis = redis.from_url(REDIS_URL)
 
 TIMES = {
     'LOBBY': -1,
-    'MESSENGER': 60,
-    'SCRAMBLER' : 45,
-    'VOTER' : 20,
-    'REVEALER' : 15
+    'MESSENGER': 40,
+    'SCRAMBLER' : 80,
+    'VOTER' : 30,
+    'REVEALER' : 20
 }
 
 # Game Stages
