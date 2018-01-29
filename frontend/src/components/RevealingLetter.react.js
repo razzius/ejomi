@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import './RevealingLetter.css'
 
 class RevealingLetter extends Component {
 
