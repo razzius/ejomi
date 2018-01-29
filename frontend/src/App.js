@@ -187,7 +187,6 @@ class App extends Component {
     if (currentStage === PAGES.LOBBY) {
       pageComponent =
         <div>
-          <p>userId: {userId}</p>
           <Lobby
             userList = {Object.values(users).map(user => user.username)}
             onJoin = {this.handleJoin.bind(this)}
@@ -249,7 +248,6 @@ class App extends Component {
     return (
       <div className="App">
         <h1>EJOMI</h1>
-        <h3>{currentStage}</h3>
         {pageComponent}
       </div>
     );

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import EmojiBoard from './EmojiBoard.react';
+import ColorHash from '../color-hash';
 import RevealingMessage from './RevealingMessage.react';
 import Clock from './Clock.react';
 
@@ -7,6 +8,8 @@ class Revealer extends Component {
 
   constructor(props) {
     super(props);
+
+    this.colorHash = new ColorHash();
 
     if(this.props.users[this.props.messenger_id])
       this.messenger_name = this.props.users[this.props.messenger_id].username;
@@ -20,6 +23,14 @@ class Revealer extends Component {
 
     this.messenger_text = this.messenger_name ? "The messenger was " + this.messenger_name : "The messenger is no longer in the game."
     this.scrambler_text = this.scrambler_name ? "And the scrambler was " + this.scrambler_name + "!" : "The scrambler is no longer in the game."
+  }
+
+  _renderNameStyle = (name) => {
+    if (!name) { return {}; }
+    const colorHex = this.colorHash.hex(name);
+    const style = { color: colorHex,
+                    fontWeight: "bold"}
+    return style;
   }
 
   render() {

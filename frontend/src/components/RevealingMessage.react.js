@@ -9,7 +9,8 @@ class RevealingMessage extends Component {
 
     this.textToDisplay = {
       'original': "And the original message was... ",
-      'voter': "The scrambled message is",
+      // 'specialRole': "The scrambled message is",
+      'voter': null
     }
   }
 
@@ -28,8 +29,8 @@ class RevealingMessage extends Component {
         </p>
         <div className='revealingMessage'>
           {this.letterPairs.map(function(letters, index){
-            return <RevealingLetter 
-              originalLetter={letters.originalLetter} 
+            return <RevealingLetter
+              originalLetter={letters.originalLetter}
               scrambledLetter={letters.scrambledLetter}
             />;
           })}

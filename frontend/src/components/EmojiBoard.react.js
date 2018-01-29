@@ -18,7 +18,7 @@ function EmojiCell(props) {
   );
 }
 
-function randomizedCells(props) {
+function randomizedCells(props, shiftAmount) {
   const goalEmojiIndex = props.goalEmojiIndex;
   const emojis = props.emojiList.map((emoji,index) =>
     <EmojiCell
@@ -33,7 +33,6 @@ function randomizedCells(props) {
       index={index}
     />
   );
-  const shiftAmount = Math.random() * emojis.length + 1;
   for (var i = 0; i < shiftAmount; i++) {
     emojis.push(emojis.shift());
   }
@@ -65,13 +64,17 @@ function getNameForId(userId, users) {
 
 class EmojiBoard extends Component {
 
+  constructor(props) {
+    super(props);
+    this.shiftAmount = Math.random() * props.emojiList.length + 1;
+  }
   // we need to make key depend on the props which are changing, or it won't re-render
   // seems to be a react bug
   // see https://stackoverflow.com/questions/45445724/component-in-react-doesnt-render-when-in-map-function/46311414#46311414
   render() {
     return (
       <div className="board">
-        {randomizedCells(this.props)}
+        {randomizedCells(this.props, this.shiftAmount)}
       </div>
     );
   }
