@@ -25,11 +25,11 @@ class Revealer extends Component {
           votes={this.props.votes}
           users={this.props.users}
            />
+      <RevealingMessage letterPairs={this.letterPairs}/>
       <p> Original </p>
       <p> {this.props.originalMessage} </p>
       <p> Scrambled </p>
       <p> {this.props.scrambledMessage} </p>
-      <RevealingMessage letterPairs={this.letterPairs}/>
     </div>
     );
   }
