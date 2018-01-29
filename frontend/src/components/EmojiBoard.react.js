@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import emoji from 'react-easy-emoji';
 
 function EmojiCell(props) {
   const classNames = "emojiCell" + (props.selected ? " selected" : "")
@@ -11,7 +12,7 @@ for (var i = 0; i < voterNames.length; i++) {
   return (
       <div onClick={props.onClick}
         className={classNames}>
-        {props.value}
+        {emoji(props.value)}
         <span className='voterName'>{voterHtml} </span>
       </div>
   );

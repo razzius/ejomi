@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import randomEmoji from 'random-emoji'
+import emoji from 'react-easy-emoji'
 
 class EmojiHaiku extends Component {
 
@@ -19,7 +20,7 @@ class EmojiHaiku extends Component {
       <h1>
         {emojiLines.map((line, lineIndex) => <div key={lineIndex}>
           {
-            line.map((e, index) => <span key={index} style={{padding: "10px"}}>{e}</span>)
+            line.map((e, index) => <span key={index} style={{padding: "10px"}}>{emoji(e)}</span>)
           }
           </div>)
         }
