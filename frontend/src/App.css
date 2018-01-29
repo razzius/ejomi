@@ -25,8 +25,8 @@ button {
 
 .emojiCell {
   width: 18%;
-  min-width: 70px;
-  height: 70px;
+  min-width: 90px;
+  height: 80px;
   line-height: 75px;
   font-size: 50px;
   margin: 5px;
@@ -60,4 +60,8 @@ button {
   position: absolute;
   font-size: 15px;
   z-index:1;
+}
+
+.clockText {
+  margin-top: 10px;
 }

@@ -19,8 +19,9 @@ class Clock extends Component {
 
   render() {
     return (
-      <div>
+      <div className="clockText">
       {this.state.currentTimeRemaining}
+      <span> sec remaining</span>
       </div>
     );
   }
