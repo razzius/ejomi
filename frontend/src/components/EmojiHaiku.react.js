@@ -11,9 +11,9 @@ class EmojiHaiku extends Component {
   }
 
   render() {
-    var emojiLines = this.state.haiku.map(line => line.map(e => e.character))
+    const emojiLines = this.state.haiku.map(line => line.map(e => e.character))
 
-    var emojiWords = this.state.haiku.map(line => line.map(e => e.name).join(' '))
+    const emojiWords = this.state.haiku.map(line => line.map(e => e.name.replace(/_/g,' ')).join(' '))
 
     return <div style={{paddingBottom: "25px"}}>
       <h1>
