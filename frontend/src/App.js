@@ -156,14 +156,14 @@ class App extends Component {
   }
 
   _getGameByMessenger = (messenger_id) => {
-    return Object.values(this._getState().games).find(game =>
-      game.messenger_id === messenger_id
+    return this._getState().games.find(game =>
+      game.messenger_id === messenger_id.toString()
     );
   }
 
   _getGameByScrambler = (scrambler_id) => {
-    return Object.values(this._getState().games).find(game =>
-      game.scrambler_id === scrambler_id
+    return this._getState().games.find(game =>
+      game.scrambler_id === scrambler_id.toString()
     );
   }
 

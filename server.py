@@ -2,7 +2,6 @@ from enum import Enum
 import json
 import os
 import random
-from Models import GameInstance, Player
 
 import gevent
 import redis
@@ -39,11 +38,12 @@ NORMAL_TIMES = {
     'LOBBY': -1,
     'MESSENGER': 45,
     'SCRAMBLER': 60,
-    'VOTER' : 45,
-    'REVEALER' : 25,
+    'VOTER': 45,
+    'REVEALER': 25,
 }
 
 TIMES = NORMAL_TIMES
+
 
 # Game Stages
 class Stages(Enum):
@@ -53,24 +53,44 @@ class Stages(Enum):
     VOTER = 'VOTER'
     REVEALER = 'REVEALER'
 
-# Global State
-clients = {}
-game_instances = {}
-players = {}
-current_stage = Stages.LOBBY
-current_vote = 0
+
+# Server State
+clients = []
+
+# do not mutate!
+START_STATE = {
+    'games': [],
+    'players': {},
+    'current_stage': Stages.LOBBY.name,
+    'current_vote': 0
+}
 
 pubsub = redis.pubsub()
 pubsub.subscribe(REDIS_CHAN)
 
-def delete_client(client):
-    client_id = get_client_id(client)
-    print(f"deleting client {client_id}")
-    if current_stage == Stages.LOBBY and client_id in players:
-        del players[client_id]
-    if client in clients:
-        del clients[client]
 
+# Accessors for state across servers which uses redis
+def get_state():
+    return json.loads(redis.get('state'))
+
+
+def set_state(state):
+    redis.set('state', json.dumps(state))
+
+
+def delete_client(client):
+    client_id = id(client)
+    print(f"deleting client {client_id}")
+
+    state = get_state()
+
+    if state['current_stage'] == Stages.LOBBY.name and str(client_id) in state['players']:
+        del state['players'][str(client_id)]
+
+    if client in clients:
+        clients.remove(client)
+
+    set_state(state)
     broadcast_state()
 
 
@@ -92,89 +112,94 @@ def publish_redis_messages_to_clients():
             if '_user_id' in data:
                 print(f'Sending to {data["_user_id"]}')
                 # race condition: user disconnects
-                user = [user for user in clients.keys() if id(user) == data['_user_id']][0]
+                user = next(user for user in clients if id(user) == data['_user_id'])
                 print(f'publishing to {id(user)} only')
 
                 gevent.spawn(send, user, json.dumps(data).encode())
             else:
                 print(f'publishing to all {len(clients)} clients')
-                for client in clients.keys():
+                for client in clients:
                     gevent.spawn(send, client, message['data'])
 
         else:
             print(f'Redis gave informative message {message}')
 
 
-gevent.spawn(publish_redis_messages_to_clients)
+def create_game(messenger_id, scrambler_id):
+    n_emoji = 10
 
-def get_scrambler_index(client):
-    return (clients[client]['index'] + 1 ) % len(clients)
+    goal_index = random.randint(0, n_emoji)
 
-def get_scrambler(client):
-    index = get_scrambler_index(client)
-    return next(user for (user, client) in clients.items() if client['index'] == index)
+    return {
+        'messenger_id': messenger_id,
+        'scrambler_id': scrambler_id,
+        'emoji_board': make_emoji_list(n_emoji),
+        'goal_index': goal_index,
+        # Creates an anti_goal that excludes the regular goal
+        'anti_goal': random.choice([n for n in range(n_emoji) if n != goal_index]),
+        'message': '',
+        'scrambled_message': '',
+        'votes': {}
+    }
 
+
+# unused
 def send_hint_to_scrambler(client):
-    scrambler = get_scrambler(client)
+    """The client is the messenger for this round"""
+    games = get_state()['games']
 
-    clients[scrambler]['unscrambled_hint'] = client['hint']
+    game = next(game for game in games if game['messenger_id'] == str(id(client)))
+
+    scrambler = next(user for user in clients if game['scrambler_id'] == str(id(user)))
 
     notify_user(scrambler, {
         'type': 'unscrambled_hint',
-        'unscrambled_hint': client['hint'],
+        'unscrambled_hint': game['message'],
     })
 
-def send_hint_to_everybody(client):
-    scrambler = get_scrambler(client)
-    notify_all({
-        'type': 'scrambled_hint',
-        'scrambled_hint': clients[scrambler]['scrambled_hint']
-    })
-
-
-def update_scores():
-    pass
 
 def reset_game():
-    global game_instances, players, current_stage, current_vote
-    game_instances = {}
-    players = {}
-    current_stage = Stages.LOBBY
-    current_vote = 0
+    set_state(START_STATE)
     broadcast_state()
 
 
 def start_game_timer():
-    global current_stage, current_vote
-    current_stage = Stages.MESSENGER
+    state = get_state()
+    state['current_stage'] = Stages.MESSENGER.name
+
+    set_state(state)
     broadcast_state()
 
-    gevent.sleep(TIMES[current_stage.name])
+    gevent.sleep(TIMES[state['current_stage']])
 
-    current_stage = Stages.SCRAMBLER
+    state = get_state()
+    state['current_stage'] = Stages.SCRAMBLER.name
+
+    set_state(state)
     broadcast_state()
 
-    gevent.sleep(TIMES[current_stage.name])
+    gevent.sleep(TIMES[state['current_stage']])
 
-    for game_id in game_instances:
-        current_stage = Stages.VOTER
-        current_vote = game_id
+    state = get_state()
+
+    games = state['games']
+
+    for game_id in games:
+        state = get_state()
+        state['current_stage'] = Stages.VOTER.name
+
+        set_state(state)
         broadcast_state()
-        gevent.sleep(TIMES[current_stage.name])
-        current_stage = Stages.REVEALER
+
+        state = get_state()
+        state['current_stage'] = Stages.REVEALER.name
+
+        set_state(state)
         broadcast_state()
-        gevent.sleep(TIMES[current_stage.name])
+
+        gevent.sleep(TIMES[state['current_stage']])
 
     reset_game()
-
-    # for client in clients:
-    #     send_hint_to_everybody(client)
-    #
-    #     gevent.sleep(30)
-    #
-    #     round += 1
-    #     # round is over, calculate scores
-    #     update_scores()
 
 
 @app.route('/')
@@ -189,105 +214,150 @@ def make_emoji_list(n):
         emojis.add(random_emoji()[0])
     return list(emojis)
 
+
 def broadcast_state():
+    state = get_state()
+
+    print(clients)
+    print([id(client) for client in clients])
+
+    games = state['games']
+    players = state['players']
+    current_stage = state['current_stage']
+    current_vote = state['current_vote']
+
     notify_all({
-        'current_stage': current_stage.name,
+        'current_stage': current_stage,
         'times': TIMES,
         'current_vote': current_vote,
         'type': 'state_update',
-        'games': {k: v.to_dict() for (k, v) in game_instances.items()},
-        'users': {client_id: player.to_dict() for (client_id, player) in players.items()}
+        'games': games,
+        'users': players
     })
 
-def get_client_id(client):
-    return clients[client]['id']
 
 def handle_message(client, data):
-
-    client_id = get_client_id(client)
-    print(f'handle_message({client_id}, {data})')
+    client_id = id(client)
+    print(f'handle_message from {client_id} with data {data}')
 
     if data['type'] == 'join':
-        player = Player(client, data['username'])
+        state = get_state()
+
+        players = state['players']
+        games = state['games']
+
+        player = {
+            'username': data['username'],
+            'score': 0
+        }
+
         players[client_id] = player
+
+        set_state(state)
         broadcast_state()
 
     elif data['type'] == 'start':
+        state = get_state()
+
+        players = state['players']
+        games = state['games']
+
         if len(players) < 3:
-            raise Exception("Not enough players")
+            raise Exception('Not enough players')
 
         player_ids = list(players.keys())
         derangement = list(player_ids)
-        while any(x == y for (x, y) in zip(player_ids, derangement)):
+
+        while any(x == y for x, y in zip(player_ids, derangement)):
             random.shuffle(derangement)
 
-        for ((messenger_id, player), scrambler_id) in zip(players.items(), derangement):
-            emojis = make_emoji_list(10)
-            game_instance = GameInstance(emojis, messenger_id, scrambler_id)
-            game_instances[id(game_instance)] = game_instance
+        for messenger_id, scrambler_id in zip(player_ids, derangement):
+            game = create_game(messenger_id, scrambler_id)
 
-            print(f'Starting game {game_instance.to_dict()}')
+            games.append(game)
 
+            print(f'Starting game {game}')
+
+        set_state(state)
         broadcast_state()
 
         gevent.spawn(start_game_timer)
 
-
     # The clue that the hinter suggests
     elif data['type'] == 'hint':
-        hint = data['hint']
-        print(f'Received hint:{hint} from {client_id}')
+        state = get_state()
 
-        game = next(game for game in game_instances.values() if game.messenger_id == client_id)
-        game.message = hint
+        players = state['players']
+        games = state['games']
+
+        hint = data['hint']
+
+        game = next(
+            game
+            for game in games
+            if game['messenger_id'] == str(client_id)
+        )
+
+        game['message'] = hint
+
         # Set same hint as scrambled in case of disconnect
-        game.scrambled_message = hint
+        game['scrambled_message'] = hint
+
+        set_state(state)
+        broadcast_state()
 
     # The scrambled hint
     elif data['type'] == 'scrambled_hint':
+        state = get_state()
+        games = state['games']
         scrambled_hint = data['scrambled_hint']
-        print(f'Received scrambled_hint:{scrambled_hint} from {clients[client]["username"]}')
 
-        game = next(game for game in game_instances.values() if game.scrambler_id == client_id)
-        game.scrambled_message = scrambled_hint
+        game = next(game for game in games if game['scrambler_id'] == str(client_id))
+        game['scrambled_message'] = scrambled_hint
+
+        set_state(state)
+        broadcast_state()
 
     elif data['type'] == 'vote':
+        state = get_state()
         vote = data['vote']
-        print(f'Received vote:{vote} from {clients[client]["username"]}')
 
-        game = game_instances[data['game_id']]
-        game.votes[client_id] = vote
+        game = games[state['current_vote']]
+        game['votes'][str(client_id)] = vote
 
+        set_state(state)
+        broadcast_state()
 
     else:
         raise Exception('Unknown event {}'.format(data))
+
 
 def notify_all(data):
     redis.publish(REDIS_CHAN, json.dumps(data))
 
 
 def notify_user(client, data):
-    # janky
-    data['_user_id'] = get_client_id(client)
+    # Uses _user_id as a hidden field to restrict only send to single user
+    data['_user_id'] = id(client)
     redis.publish(REDIS_CHAN, json.dumps(data))
+
 
 @sockets.route('/socket')
 def handle_websocket(client):
     client_id = id(client)
     print(f'Got connection from {client_id}')
 
-    clients[client] = {
-        'id': client_id,
-        'username': None,
-        'vote': {}
-    }
+    clients.append(client)
 
     message = {
         'type': 'welcome',
         '_user_id': client_id,
     }
 
-    broadcast_state()
+    try:
+        broadcast_state()
+    except Exception:
+        app.logger.exception('Failed to broadcast state to new user')
 
     notify_user(client, message)
 
@@ -301,7 +371,13 @@ def handle_websocket(client):
 
             try:
                 handle_message(client, data)
-            except Exception as e:
-                app.logger.exception('Failed to process error')
+            except Exception:
+                app.logger.exception('Failed to handle user message')
 
         gevent.sleep(.1)
+
+
+# Reset server state on server reload
+redis.set('state', json.dumps(START_STATE))
+
+gevent.spawn(publish_redis_messages_to_clients)
