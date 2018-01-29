@@ -11,6 +11,23 @@ from flask_sockets import Sockets
 
 from random_emoji import random_emoji
 
+from logging.config import dictConfig
+
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    }
+})
 
 REDIS_URL = os.environ.get('REDIS_URL', 'localhost:6371')
 REDIS_CHAN = 'emoji'
