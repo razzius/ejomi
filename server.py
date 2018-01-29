@@ -29,21 +29,21 @@ redis = redis.from_url(REDIS_URL)
 
 FAST_TIMES = {
     'LOBBY': -1,
-    'MESSENGER': 5,
-    'SCRAMBLER': 5,
-    'VOTER': 5,
-    'REVEALER': 5,
+    'MESSENGER': 10,
+    'SCRAMBLER': 10,
+    'VOTER': 10,
+    'REVEALER': 10,
 }
 
 NORMAL_TIMES = {
     'LOBBY': -1,
     'MESSENGER': 45,
-    'SCRAMBLER' : 65,
-    'VOTER' : 30,
-    'REVEALER' : 15,
+    'SCRAMBLER' : 70,
+    'VOTER' : 60,
+    'REVEALER' : 25,
 }
 
-TIMES = FAST_TIMES
+TIMES = NORMAL_TIMES
 
 # Game Stages
 class Stages(Enum):
