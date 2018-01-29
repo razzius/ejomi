@@ -131,7 +131,7 @@ def publish_redis_messages_to_clients():
                 try:
                     user = next(user for user in clients if id(user) == data['_user_id'])
                 except StopIteration:
-                    print(f'{data["user_id"]} not on this server')
+                    print(f'{data["_user_id"]} not on this server')
                     continue
 
                 gevent.spawn(send, user, json.dumps(data).encode())
