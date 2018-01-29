@@ -1,0 +1,6 @@
+{
+  "cacheDiretories": ["frontend/build", "frontend/node_modules"],
+  "scripts": {
+    "heroku-postbuild": "sh build_frontend.sh"
+  }
+}

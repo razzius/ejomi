@@ -17,6 +17,11 @@ const PAGES = {
   REVEALER: 'REVEALER'
 };
 
+const MESSENGER_TIME = 20;
+const SCRAMBLER_TIME = 20;
+const VOTER_TIME = 20;
+// const REVEALER_TIME = 20;
+
 const SHOULD_MOCK_STATE = false;
 
 // print extra logging
@@ -84,7 +89,7 @@ class App extends Component {
 
     const protocol = getWsProtocol()
 
-    const ws = new ReconnectingWebsocket(`${protocol}${host}/socket`);
+    const ws = new ReconnectingWebsocket(`${protocol}${window.location.host}/socket`);
     ws.onmessage = handleMessage.bind(this);
     if (DEBUG_MODE) {
       ws.onopen = (e) => {
@@ -188,7 +193,7 @@ class App extends Component {
           emojiList={game.emoji_board}
           onSubmit={this._onSubmitHint}
           goalEmojiIndex={game.goal_index}
-          timerSeconds={10}
+          timerSeconds={MESSENGER_TIME}
           characterLimit={10}
         />;
     } else if (currentStage === PAGES.SCRAMBLER) {
@@ -198,16 +203,18 @@ class App extends Component {
           emojiList={game.emoji_board}
           onSubmit={this._onSubmitScrambledHint}
           message={game.message}
-          timerSeconds={10}
+          timerSeconds={SCRAMBLER_TIME}
         />;
     } else if (currentStage === PAGES.VOTER) {
       const game = games[currentVote];
+      const allowedToVote = game.messenger_id !== userId && game.scrambler_id !== userId;
       pageComponent = (
         <Voter
+          allowedToVote={allowedToVote}
           emojiList={game.emoji_board}
           onSubmit={this._onSubmitVote}
           scrambledMessage={game.scrambled_message}
-          timerSeconds={10}
+          timerSeconds={VOTER_TIME}
         />
       );
     } else if (currentStage === PAGES.REVEALER) {

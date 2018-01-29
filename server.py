@@ -13,7 +13,6 @@ from flask_sockets import Sockets
 from random_emoji import random_emoji
 
 
-
 REDIS_URL = os.environ.get('REDIS_URL', 'localhost:6371')
 REDIS_CHAN = 'emoji'
 
@@ -25,8 +24,15 @@ app = Flask(
 
 app.debug = 'DEBUG' in os.environ
 
+SERVER_NAME = '172.20.10.12' # if not app.debug else 'localhost'
+
 sockets = Sockets(app)
 redis = redis.from_url(REDIS_URL)
+
+MESSENGER_TIME = 20
+SCRAMBLER_TIME = 20
+VOTER_TIME = 20
+REVEALER_TIME = 20
 
 # Game Stages
 class Stages(Enum):
@@ -46,12 +52,23 @@ current_vote = 0
 pubsub = redis.pubsub()
 pubsub.subscribe(REDIS_CHAN)
 
+def delete_client(client):
+    client_id = get_client_id(client)
+    print(f"deleting client {client_id}")
+    if client_id in players:
+        del players[client_id]
+    if client in clients:
+        del clients[client]
+
+    broadcast_state()
+
+
 def send(client, raw_data):
     try:
         client.send(raw_data)
     except Exception as e:
         app.logger.exception('Failed to send to client, removing from pool')
-        del clients[client]
+        delete_client(client)
 
 
 def publish_redis_messages_to_clients():
@@ -122,21 +139,21 @@ def start_game_timer():
     current_stage = Stages.MESSENGER
     broadcast_state()
 
-    gevent.sleep(10)
+    gevent.sleep(MESSENGER_TIME)
 
     current_stage = Stages.SCRAMBLER
     broadcast_state()
 
-    gevent.sleep(10)
+    gevent.sleep(SCRAMBLER_TIME)
 
     for game_id in game_instances:
         current_stage = Stages.VOTER
         current_vote = game_id
         broadcast_state()
-        gevent.sleep(10)
+        gevent.sleep(VOTER_TIME)
         current_stage = Stages.REVEALER
         broadcast_state()
-        gevent.sleep(10)
+        gevent.sleep(REVEALER_TIME)
 
 
     reset_game()
@@ -275,7 +292,7 @@ def handle_websocket(client):
         message = client.receive()
         if message is None:
             print(f'Got none message, closing {client_id}')
-            del clients[client]
+            delete_client(client)
         else:
             data = json.loads(message)
 
