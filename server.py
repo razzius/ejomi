@@ -210,6 +210,8 @@ def start_game_timer():
         set_state(state)
         broadcast_state()
 
+        gevent.sleep(TIMES[state['current_stage']])
+
         state = get_state()
         state['current_stage'] = Stages.REVEALER.name
 
@@ -397,6 +399,7 @@ def handle_websocket(client):
 
 
 # Reset server state on server reload
-redis.set('state', json.dumps(START_STATE))
+if redis.get('state') is None:
+    redis.set('state', json.dumps(START_STATE))
 
 gevent.spawn(publish_redis_messages_to_clients)
