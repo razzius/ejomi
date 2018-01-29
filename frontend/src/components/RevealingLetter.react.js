@@ -159,9 +159,7 @@ class RevealingLetter extends Component {
 
   render () {
     return (
-      <div>
-        <canvas ref="canvas" width="60" height="100"></canvas>
-      </div>
+      <canvas ref="canvas" width="60" height="100"></canvas>
     );
   }
 }
