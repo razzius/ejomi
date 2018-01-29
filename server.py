@@ -59,7 +59,7 @@ NORMAL_TIMES = {
     'REVEALER': 25,
 }
 
-TIMES = NORMAL_TIMES
+TIMES = NORMAL_TIMES if 'FAST' not in os.environ else FAST_TIMES
 
 
 # Game Stages
@@ -117,6 +117,14 @@ def send(client, raw_data):
     except Exception as e:
         app.logger.exception('Failed to send to client, removing from pool')
         delete_client(client)
+
+
+def ping_clients():
+    while True:
+        for client in clients:
+            notify_user(client, {'type': 'ping'})
+
+        gevent.sleep(10)
 
 
 def publish_redis_messages_to_clients():
@@ -318,7 +326,7 @@ def handle_message(client, data):
         game = next(
             game
             for game in games
-            if game['messenger_id'] == str(client_id)
+            if game['messenger_id'] == client_id
         )
 
         game['message'] = hint
@@ -335,7 +343,7 @@ def handle_message(client, data):
         games = state['games']
         scrambled_hint = data['scrambled_hint']
 
-        game = next(game for game in games if game['scrambler_id'] == str(client_id))
+        game = next(game for game in games if game['scrambler_id'] == client_id)
         game['scrambled_message'] = scrambled_hint
 
         set_state(state)
@@ -344,9 +352,10 @@ def handle_message(client, data):
     elif data['type'] == 'vote':
         state = get_state()
         vote = data['vote']
-
+        games = state['games']
         game = games[state['current_vote']]
-        game['votes'][str(client_id)] = vote
+
+        game['votes'][client_id] = vote
 
         set_state(state)
         broadcast_state()
@@ -405,3 +414,4 @@ if redis.get('state') is None:
     redis.set('state', json.dumps(START_STATE))
 
 gevent.spawn(publish_redis_messages_to_clients)
+gevent.spawn(ping_clients)
