@@ -58,7 +58,7 @@ class TextInput extends Component {
     }
 
     return (
-      <form>
+      <form onSubmit= {(e) => e.preventDefault() }>
         <label>
           <input type="text" value={value} onChange={this._handleChange} placeholder = {this.props.placeHolder}
           autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"/>
