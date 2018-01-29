@@ -22,7 +22,7 @@ const SHOULD_MOCK_STATE = false;
 // print extra logging
 const DEBUG_MODE = false;
 
-const host = 'localhost:8000'
+const host = window.location.host
 
 function getWsProtocol() {
   if (window.location.protocol === 'https:') {
@@ -91,7 +91,7 @@ class App extends Component {
 
     const protocol = getWsProtocol()
 
-    const ws = new ReconnectingWebsocket(`${protocol}localhost:8000/socket`);
+    const ws = new ReconnectingWebsocket(`${protocol}${host}/socket`);
     ws.onmessage = handleMessage.bind(this);
     if (DEBUG_MODE) {
       ws.onopen = (e) => {
