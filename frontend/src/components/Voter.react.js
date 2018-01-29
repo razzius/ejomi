@@ -48,7 +48,12 @@ class Voter extends Component {
           goalEmojiIndex={allowedToVote && this.state.selectedEmojiIndex > -1 && this.state.selectedEmojiIndex}
         />
         {allowedToVote ? <p>Select the emoji above described by: </p> : null}
-        <RevealingMessage state="voter" originalMessage={this.props.scrambledMessage} scrambledMessage={this.props.scrambledMessage}/>
+        <RevealingMessage
+          mode="transition_once"
+          state="voter"
+          originalMessage={this.props.scrambledMessage}
+          scrambledMessage={this.props.scrambledMessage}
+        />
         {allowedToVote ? null : (
           <div>
             <p>Waiting for other players to vote...</p>
