@@ -285,7 +285,6 @@ def handle_websocket(client):
 
     while not client.closed:
         message = client.receive()
-        client.send(message)
         if message is None:
             print(f'Got none message, closing {client_id}')
             delete_client(client)
@@ -296,6 +295,5 @@ def handle_websocket(client):
                 handle_message(client, data)
             except Exception as e:
                 app.logger.exception('Failed to process error')
-
 
         gevent.sleep(.1)
