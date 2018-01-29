@@ -25,7 +25,7 @@ export default {
          ],
          "goal_index":0,
          "anti_goal":2,
-         "message":"1",
+         "message":"pounds",
          "scrambled_message":"65",
          "votes":{
             "4574773632":7,
@@ -75,8 +75,8 @@ export default {
          ],
          "goal_index":2,
          "anti_goal":4,
-         "message":"3",
-         "scrambled_message":"34",
+         "message":"footsteps",
+         "scrambled_message":"handsteps",
          "votes":{
 
          }

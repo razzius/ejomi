@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import levenshtein from 'fast-levenshtein';
 
 function getEditDistance(a, b) {
   const length = Math.min(a.length, b.length);
@@ -26,10 +27,19 @@ class TextInput extends Component {
   }
 
   _handleChange = (event) => {
+    const referenceString = this.props.referenceString;
+    const {
+      maxEditDistance,
+      maxSize,
+    } = this.state;
+
     const value = event.target.value;
-    const trimmed = value.substr(0, this.state.maxSize);
-    this.setState({value: trimmed});
-    this.props.onSubmit && this.props.onSubmit(trimmed);
+    if (value.length <= maxSize
+      && (!referenceString || levenshtein.get(value, referenceString) <= maxEditDistance)
+    ) {
+      this.setState({value});
+      this.props.onSubmit && this.props.onSubmit(value);
+    }
   };
 
   render() {
@@ -39,14 +49,12 @@ class TextInput extends Component {
       value,
     } = this.state;
 
-    let warning = null;
-    if (value.length > this.state.maxSize) {
-      warning = <p>YOU WROTE TOO MUCH</p>;
-    } else if (referenceString) {
-      const editDistance = getEditDistance(value, referenceString);
-      if (editDistance > maxEditDistance) {
-          warning = <p>You made {editDistance} edits, max is {maxEditDistance}</p>;
-      }
+    const lengthWarning = <p>{value.length}/{this.state.maxSize} characters</p>
+
+    let editWarning = null;
+    if (referenceString) {
+      const editDistance = levenshtein.get(value, referenceString);
+      editWarning = <p>{editDistance}/{maxEditDistance} edits</p>;
     }
 
     return (
@@ -55,7 +63,8 @@ class TextInput extends Component {
           <input type="text" value={value} onChange={this._handleChange} placeholder = {this.props.placeHolder}
           autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"/>
         </label>
-        {warning}
+        {lengthWarning}
+        {editWarning}
       </form>
     );
   }
