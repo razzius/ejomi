@@ -27,13 +27,23 @@ app.debug = 'DEBUG' in os.environ
 sockets = Sockets(app)
 redis = redis.from_url(REDIS_URL)
 
-TIMES = {
+FAST_TIMES = {
+    'LOBBY': -1,
+    'MESSENGER': 10,
+    'SCRAMBLER': 10,
+    'VOTER': 10,
+    'REVEALER': 10,
+}
+
+NORMAL_TIMES = {
     'LOBBY': -1,
     'MESSENGER': 40,
     'SCRAMBLER' : 80,
     'VOTER' : 30,
-    'REVEALER' : 20
+    'REVEALER' : 20,
 }
+
+TIMES = NORMAL_TIMES
 
 # Game Stages
 class Stages(Enum):
