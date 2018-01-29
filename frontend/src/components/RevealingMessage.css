@@ -1,3 +1,8 @@
+.displayText {
+  margin-top: 20;
+  margin-bottom: 0;
+}
+
 .revealingMessage {
   overflow: auto;
   width: 800;

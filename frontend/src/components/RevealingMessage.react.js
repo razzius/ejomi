@@ -23,7 +23,7 @@ class RevealingMessage extends Component {
 
     return (
       <div>
-        <p>
+        <p className="displayText">
           {this.textToDisplay[this.props.state]}
         </p>
         <div className='revealingMessage'>
