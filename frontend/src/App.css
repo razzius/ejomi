@@ -3,8 +3,9 @@
 }
 
 
-.inputBox {
+input {
   width: 20%;
+  min-width: 200px;
   padding: 10px 5px;
   font-size: 20px;
 }
@@ -17,19 +18,22 @@ button {
 }
 
 .board {
-    width:600px;
+    width:100%;
+    max-width: 600px;
     margin: 0 auto;
 }
 
 .emojiCell {
-  width: 100px;
+  width: 18%;
+  min-width: 70px;
   height: 70px;
-  line-height: 85px;
+  line-height: 75px;
   font-size: 50px;
   margin: 5px;
   padding: 5px;
   display: inline-block;
   text-align: center;
+  box-sizing: border-box;
   background: #E8E8E8;
 }
 
@@ -38,9 +42,10 @@ button {
 }
 
 .prompt {
-  width:500px;
-  margin:0 auto;
-  font-size: 15px;
+  width: 90%;
+  max-width:500px;
+  margin:10px auto;
+  font-size: 16px;
 }
 
 .userList {
@@ -49,4 +54,10 @@ button {
 
 .playerMessage {
   font-size: 20px;
+}
+
+.voterName {
+  position: absolute;
+  font-size: 15px;
+  z-index:1;
 }
