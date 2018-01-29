@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import EmojiBoard from './EmojiBoard.react';
-import RevealingLetter from './RevealingLetter.react';
+import RevealingMessage from './RevealingMessage.react';
 
 class Revealer extends Component {
 
@@ -25,15 +25,11 @@ class Revealer extends Component {
           votes={this.props.votes}
           users={this.props.users}
            />
+      <RevealingMessage letterPairs={this.letterPairs}/>
       <p> Original </p>
       <p> {this.props.originalMessage} </p>
       <p> Scrambled </p>
       <p> {this.props.scrambledMessage} </p>
-      <div>
-          {this.letterPairs.map(function(letters, index){
-            return <RevealingLetter originalLetter={letters.originalLetter} scrambledLetter={letters.scrambledLetter}/>;
-          })}
-      </div>
     </div>
     );
   }
