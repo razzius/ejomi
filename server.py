@@ -111,9 +111,11 @@ def publish_redis_messages_to_clients():
 
             if '_user_id' in data:
                 print(f'Sending to {data["_user_id"]}')
-                # race condition: user disconnects
-                user = next(user for user in clients if id(user) == data['_user_id'])
-                print(f'publishing to {id(user)} only')
+                try:
+                    user = next(user for user in clients if id(user) == data['_user_id'])
+                except StopIteration:
+                    print(f'{data["user_id"]} not on this server')
+                    continue
 
                 gevent.spawn(send, user, json.dumps(data).encode())
             else:
