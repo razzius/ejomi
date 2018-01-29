@@ -285,6 +285,7 @@ def handle_websocket(client):
 
     while not client.closed:
         message = client.receive()
+        client.send(message)
         if message is None:
             print(f'Got none message, closing {client_id}')
             delete_client(client)
