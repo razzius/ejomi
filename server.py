@@ -66,7 +66,7 @@ pubsub.subscribe(REDIS_CHAN)
 def delete_client(client):
     client_id = get_client_id(client)
     print(f"deleting client {client_id}")
-    if client_id in players:
+    if current_stage == Stages.LOBBY and client_id in players:
         del players[client_id]
     if client in clients:
         del clients[client]
