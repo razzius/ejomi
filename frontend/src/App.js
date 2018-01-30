@@ -181,6 +181,8 @@ class App extends Component {
     } = state;
 
     let pageComponent = null;
+    const isSpectator = !(userId in users)
+
     if (currentStage === PAGES.LOBBY) {
       pageComponent =
         <div>
@@ -191,10 +193,8 @@ class App extends Component {
             showStart = {Object.keys(users).length > 2}
           />
         </div>;
-    } else if (!(userId in users)) {
-      pageComponent = <p>Game in progress. Please wait until the next round.</p>;
     } else if (currentStage === PAGES.MESSENGER) {
-      const game = this._getGameByMessenger(userId);
+      const game = this._getGameByMessenger(userId) || games[currentVote];
       pageComponent =
         <Messenger
           emojiList={game.emoji_board}
@@ -202,15 +202,17 @@ class App extends Component {
           goalEmojiIndex={game.goal_index}
           timerSeconds={times[currentStage]}
           characterLimit={10}
+          isSpectator={isSpectator}
         />;
     } else if (currentStage === PAGES.SCRAMBLER) {
-      const game = this._getGameByScrambler(userId);
+      const game = this._getGameByScrambler(userId) || games[currentVote];
       pageComponent =
         <Scrambler
           emojiList={game.emoji_board}
           onSubmit={this._onSubmitScrambledHint}
           message={game.message}
           timerSeconds={times[currentStage]}
+          isSpectator={isSpectator}
         />;
     } else if (currentStage === PAGES.VOTER) {
       const game = games[currentVote];
@@ -218,6 +220,7 @@ class App extends Component {
         <Voter
           isMessenger={game.messenger_id === userId}
           isScrambler={game.scrambler_id === userId}
+          isSpectator={isSpectator}
           emojiList={game.emoji_board}
           onSubmit={this._onSubmitVote}
           scrambledMessage={game.scrambled_message}
@@ -242,6 +245,9 @@ class App extends Component {
       );
     }
 
+    const gameInProgressMessage = isSpectator && currentStage !== PAGES.LOBBY ?
+      <div>Game in progress. Viewing as spectator</div> : null;
+
     return (
       <div className="App">
         <RevealingMessage
@@ -250,6 +256,7 @@ class App extends Component {
           originalMessage="EJOMI"
           scrambledMessage="EMOJI"
         />
+        {gameInProgressMessage}
         {pageComponent}
       </div>
     );

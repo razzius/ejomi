@@ -21,9 +21,14 @@ class Scrambler extends Component {
         <EmojiBoard
           emojiList={this.props.emojiList}
           counterIndex={0} />
-        <p>Original message: {message}</p>
-        <p>Your scramble:</p>
-        <TextInput onSubmit={this.props.onSubmit} referenceString={message} />
+        {
+          !this.props.isSpectator &&
+          <div>
+            <p>Original message: {message}</p>
+            <p>Your scramble:</p>
+            <TextInput onSubmit={this.props.onSubmit} referenceString={message} />
+          </div>
+        }
         <Clock timerSeconds={this.props.timerSeconds} />
       </div>
     );

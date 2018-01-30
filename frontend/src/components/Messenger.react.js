@@ -17,8 +17,8 @@ class Messenger extends Component {
           goalEmojiIndex={this.props.goalEmojiIndex}
           emojiList={this.props.emojiList}
           counterGoalEmojiIndex={0} />
-          <p className="prompt"> {prompt} </p>
-        <TextInput onSubmit={this.props.onSubmit}/>
+          {!this.props.isSpectator && <p className="prompt"> {prompt} </p> }
+        {!this.props.isSpectator && <TextInput onSubmit={this.props.onSubmit}/> }
         <Clock timerSeconds={this.props.timerSeconds} />
       </div>
     );

@@ -26,13 +26,14 @@ class Voter extends Component {
     const {
       isMessenger,
       isScrambler,
+      isSpectator,
       emojiList,
       scrambledMessage,
       originalMessage,
       timerSeconds,
     } = this.props;
 
-    const allowedToVote = !isMessenger && !isScrambler;
+    const allowedToVote = !isMessenger && !isScrambler && !isSpectator;
     let specialRoleText = null;
     if (isScrambler) {
       specialRoleText = "You scrambled the original message: ";
@@ -57,9 +58,11 @@ class Voter extends Component {
         {allowedToVote ? null : (
           <div>
             <p>Waiting for other players to vote...</p>
-            <p className="specialRoleText">{specialRoleText}
-              <span className="bold"> {originalMessage}</span>
-            </p>
+            {!isSpectator &&
+              <p className="specialRoleText">{specialRoleText}
+                <span className="bold"> {originalMessage}</span>
+              </p>
+            }
           </div>
         )}
 
