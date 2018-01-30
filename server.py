@@ -275,7 +275,7 @@ def start_game_timer():
             if break_sleep:
                 break
             gevent.sleep(1)
-            break_sleep = False
+        break_sleep = False
 
         state = get_state()
         # Stage = REVEALER

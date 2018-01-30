@@ -12,7 +12,7 @@ class SkipButton extends Component {
 
     return (
       <button onClick={this.props.onSubmitSkip}>
-          Ready
+          Done
       </button>
     );
   }
