@@ -74,14 +74,10 @@ class Stages(Enum):
 # Server State
 clients = []
 
-# Skip Feature
-break_sleep = False
-
 # do not mutate!
 START_STATE = {
     'games': [],
     'players': {},
-    'skip_set': set(),
     'current_stage': Stages.LOBBY.name,
     'current_vote': 0
 }
@@ -186,6 +182,28 @@ def create_game(messenger_id, scrambler_id):
         'votes': {}
     }
 
+# determines if everyone's skip is True
+def is_all_skip(players):
+    for player in players.keys():
+        print(f'player={player}')
+        print(f'players[player]={players[player]}')
+        print(f'players[player][skip]={players[player]["skip"]}')
+        if players[player]['skip'] is False:
+            return False
+    return True
+
+# sets all skip to 0 unless specified
+def reset_skips(players, *ids_to_set_skip):
+    for player in players:
+        if player in ids_to_set_skip:
+            players[player]['skip'] = True
+        else:
+            players[player]['skip'] = False
+    return players
+
+def stop_sleep():
+    global break_sleep
+    break_sleep = True
 
 # unused
 def send_hint_to_scrambler(client):
@@ -209,8 +227,11 @@ def reset_game():
 
 def start_game_timer():
     global break_sleep
+    break_sleep = False
     state = get_state()
+    # Stage = MESSENGER
     state['current_stage'] = get_next_stage(state['current_stage'])
+    state['players'] = reset_skips(state['players'])
 
     set_state(state)
     broadcast_state()
@@ -221,8 +242,9 @@ def start_game_timer():
         gevent.sleep(1)
 
     state = get_state()
+    # Stage = SCRAMBELR
     state['current_stage'] = get_next_stage(state['current_stage'])
-    state['skip_set'] = set()
+    state['players'] = reset_skips(state['players'])
 
     set_state(state)
     broadcast_state()
@@ -238,8 +260,10 @@ def start_game_timer():
 
     for game_id in games:
         state = get_state()
+        # Stage = VOTER
         state['current_stage'] = get_next_stage(state['current_stage'])
-        state['skip_set'] = set(game_id['messenger_id'], game_id['scrambler_id'])
+        # Initialize skip with messenger and scrambler true
+        state['players'] = reset_skips(state['players'],game_id['messenger_id'],game_id['scrambler_id'])
 
         set_state(state)
         broadcast_state()
@@ -250,8 +274,9 @@ def start_game_timer():
             gevent.sleep(1)
 
         state = get_state()
+        # Stage = REVEALER
         state['current_stage'] = get_next_stage(state['current_stage'])
-        state['skip_set'] = set()
+        state['players'] = reset_skips(state['players'])
 
         set_state(state)
         broadcast_state()
@@ -290,7 +315,6 @@ def broadcast_state():
     players = state['players']
     current_stage = state['current_stage']
     current_vote = state['current_vote']
-    skip_set = state['skip_set']
 
     notify_all({
         'current_stage': current_stage,
@@ -299,7 +323,6 @@ def broadcast_state():
         'type': 'state_update',
         'games': games,
         'users': players,
-        'skip_set': skip_set
     })
 
 
@@ -399,10 +422,11 @@ def handle_message(client, data):
 
     elif data['type'] == 'skip':
         state = get_state()
-        state['skip_set'].add(client_id)
+        players = state['players']
+        players[client_id]['skip]'] = True
 
-        if len(state['skip_set']) >= len(players):
-            break_sleep = True
+        if (is_all_skip(players)):
+            stop_sleep()
 
         set_state(state)
         broadcast_state()

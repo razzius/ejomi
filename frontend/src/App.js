@@ -64,7 +64,6 @@ function handleMessage(message) {
         currentVote: data.current_vote,
         games: data.games,
         users: data.users,
-        skip_set: data.skip_set,
       });
     } else if (data.type === 'messenger') {
       this.setState({
@@ -95,7 +94,6 @@ class App extends Component {
       goalEmojiIndex: 5,
       userId: -1,
       users: {},
-      skip_set: new Set(),
     };
 
     const ws = new ReconnectingWebsocket(`${getWsProtocol()}${getHost()}/socket`);
@@ -186,7 +184,6 @@ class App extends Component {
       games,
       userId,
       users,
-      skip_set,
     } = state;
 
     let pageComponent = null;
@@ -246,7 +243,7 @@ class App extends Component {
           originalMessage={game.message}
           scrambledMessage={game.scrambled_message}
           timerSeconds={times[currentStage]}
-          onSubmitSkip={this._onSubmitSkip}          
+          onSubmitSkip={this._onSubmitSkip}
           votes={game.votes}
           users={this._getState().users}
           messenger_id={game.messenger_id}
