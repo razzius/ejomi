@@ -66,7 +66,7 @@ class Voter extends Component {
         )}
 
         <Clock timerSeconds={timerSeconds} />
-        <SkipButton onSubmitSkip={onSubmitSkip} />
+        {allowedToVote ? (<SkipButton onSubmitSkip={onSubmitSkip} />) : ''}
       </div>
 
     );

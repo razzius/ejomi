@@ -8,15 +8,10 @@ class SkipButton extends Component {
 
   }
 
-  _handleClick = (event) => {
-    const onSubmitSkip = this.props.onSubmitSkip;
-    onSubmitSkip;
-  };
-
   render() {
 
     return (
-      <button onClick={this._handleClick}>
+      <button onClick={this.props.onSubmitSkip}>
           Ready
       </button>
     );

@@ -73,6 +73,7 @@ class Stages(Enum):
 
 # Server State
 clients = []
+break_sleep = False
 
 # do not mutate!
 START_STATE = {
@@ -241,6 +242,7 @@ def start_game_timer():
             break
         gevent.sleep(1)
 
+    break_sleep = False
     state = get_state()
     # Stage = SCRAMBELR
     state['current_stage'] = get_next_stage(state['current_stage'])
@@ -253,6 +255,7 @@ def start_game_timer():
         if break_sleep:
             break
         gevent.sleep(1)
+    break_sleep = False
 
     state = get_state()
 
@@ -272,6 +275,7 @@ def start_game_timer():
             if break_sleep:
                 break
             gevent.sleep(1)
+            break_sleep = False
 
         state = get_state()
         # Stage = REVEALER
@@ -285,6 +289,7 @@ def start_game_timer():
             if break_sleep:
                 break
             gevent.sleep(1)
+        break_sleep = False
 
         state['current_vote'] = state['current_vote'] + 1
 
@@ -339,7 +344,8 @@ def handle_message(client, data):
 
         player = {
             'username': data['username'],
-            'score': 0
+            'score': 0,
+            'skip': False
         }
 
         players[client_id] = player
@@ -423,7 +429,7 @@ def handle_message(client, data):
     elif data['type'] == 'skip':
         state = get_state()
         players = state['players']
-        players[client_id]['skip]'] = True
+        players[client_id]['skip'] = True
 
         if (is_all_skip(players)):
             stop_sleep()
