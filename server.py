@@ -73,15 +73,13 @@ class Stages(Enum):
 
 # Server State
 clients = []
-
-# Skip Feature
-break_sleep = False
+sleeper = None
 
 # do not mutate!
 START_STATE = {
     'games': [],
     'players': {},
-    'skip_set': set(),
+    'skip_set': [],
     'current_stage': Stages.LOBBY.name,
     'current_vote': 0
 }
@@ -208,29 +206,25 @@ def reset_game():
 
 
 def start_game_timer():
-    global break_sleep
+    global sleeper
     state = get_state()
     state['current_stage'] = get_next_stage(state['current_stage'])
 
     set_state(state)
     broadcast_state()
 
-    for i in range(TIMES[state['current_stage']]):
-        if break_sleep:
-            break
-        gevent.sleep(1)
+    sleeper = gevent.spawn(gevent.sleep, TIMES[state['current_stage']])
+    sleeper.join()
 
     state = get_state()
     state['current_stage'] = get_next_stage(state['current_stage'])
-    state['skip_set'] = set()
+    state['skip_set'] = []
 
     set_state(state)
     broadcast_state()
 
-    for i in range(TIMES[state['current_stage']]):
-        if break_sleep:
-            break
-        gevent.sleep(1)
+    sleeper = gevent.spawn(gevent.sleep, TIMES[state['current_stage']])
+    sleeper.join()
 
     state = get_state()
 
@@ -239,27 +233,23 @@ def start_game_timer():
     for game_id in games:
         state = get_state()
         state['current_stage'] = get_next_stage(state['current_stage'])
-        state['skip_set'] = set(game_id['messenger_id'], game_id['scrambler_id'])
+        state['skip_set'] = [game_id['messenger_id'], game_id['scrambler_id']]
 
         set_state(state)
         broadcast_state()
 
-        for i in range(TIMES[state['current_stage']]):
-            if break_sleep:
-                break
-            gevent.sleep(1)
+        sleeper = gevent.spawn(gevent.sleep, TIMES[state['current_stage']])
+        sleeper.join()
 
         state = get_state()
         state['current_stage'] = get_next_stage(state['current_stage'])
-        state['skip_set'] = set()
+        state['skip_set'] = []
 
         set_state(state)
         broadcast_state()
 
-        for i in range(TIMES[state['current_stage']]):
-            if break_sleep:
-                break
-            gevent.sleep(1)
+        sleeper = gevent.spawn(gevent.sleep, TIMES[state['current_stage']])
+        sleeper.join()
 
         state['current_vote'] = state['current_vote'] + 1
 
@@ -304,7 +294,6 @@ def broadcast_state():
 
 
 def handle_message(client, data):
-    global break_sleep
     client_id = str(id(client))
     print(f'handle_message from {client_id} with data {data}')
 
@@ -399,10 +388,17 @@ def handle_message(client, data):
 
     elif data['type'] == 'skip':
         state = get_state()
-        state['skip_set'].add(client_id)
+        if client_id not in state['skip_set']:
+            state['skip_set'].append(client_id)
 
-        if len(state['skip_set']) >= len(players):
-            break_sleep = True
+        if len(state['skip_set']) >= len(state['players']):
+            app.logger.info('All players voted to skip')
+
+            if sleeper:
+                sleeper.kill()
+                app.logger.info('Killed sleepe')
+
+            state['skip_set'] = []
 
         set_state(state)
         broadcast_state()

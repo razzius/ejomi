@@ -246,7 +246,7 @@ class App extends Component {
           originalMessage={game.message}
           scrambledMessage={game.scrambled_message}
           timerSeconds={times[currentStage]}
-          onSubmitSkip={this._onSubmitSkip}          
+          onSubmitSkip={this._onSubmitSkip}
           votes={game.votes}
           users={this._getState().users}
           messenger_id={game.messenger_id}
