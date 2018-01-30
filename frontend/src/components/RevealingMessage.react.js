@@ -8,7 +8,7 @@ class RevealingMessage extends Component {
     super(props);
 
     this.textToDisplay = {
-      'original': "And the original message was... ",
+      'original': "The scrambled message was " + this.props.scrambledMessage + " and the original message was... ",
       'voter': null,
       'ejomi': null,
     }
