@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import EmojiBoard from './EmojiBoard.react';
 import RevealingMessage from './RevealingMessage.react';
 import Clock from './Clock.react';
+import SkipButton from './SkipButton.react';
 
 class Voter extends Component {
 

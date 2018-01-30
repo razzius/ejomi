@@ -16,10 +16,11 @@ class SkipButton extends Component {
   render() {
 
     return (
-      <button onClick={_handleClick}> Ready
+      <button onClick={this._handleClick}>
+          Ready
       </button>
     );
   }
 }
 
-export default TextInput
+export default SkipButton

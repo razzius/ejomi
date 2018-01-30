@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import EmojiBoard from './EmojiBoard.react';
 import TextInput from './TextInput.react';
 import Clock from './Clock.react';
-
+import SkipButton from './SkipButton.react';
 
 // props: emojis
 class Messenger extends Component {
