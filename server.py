@@ -155,7 +155,7 @@ def publish_redis_messages_to_clients():
 def create_game(messenger_id, scrambler_id):
     n_emoji = 10
 
-    goal_index = random.randint(0, n_emoji)
+    goal_index = random.randint(0, n_emoji - 1)
 
     return {
         'messenger_id': messenger_id,
