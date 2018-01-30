@@ -53,10 +53,10 @@ FAST_TIMES = {
 
 NORMAL_TIMES = {
     'LOBBY': -1,
-    'MESSENGER': 45,
-    'SCRAMBLER': 60,
-    'VOTER': 45,
-    'REVEALER': 25,
+    'MESSENGER': 50,
+    'SCRAMBLER': 90,
+    'VOTER': 50,
+    'REVEALER': 30,
 }
 
 TIMES = NORMAL_TIMES if 'FAST' not in os.environ else FAST_TIMES
