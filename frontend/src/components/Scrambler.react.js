@@ -25,6 +25,7 @@ class Scrambler extends Component {
         <p>Your scramble:</p>
         <TextInput onSubmit={this.props.onSubmit} referenceString={message} />
         <Clock timerSeconds={this.props.timerSeconds} />
+        <SkipButton onSubmitSkip={this.props.onSubmitSkip}/>
       </div>
     );
   }

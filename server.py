@@ -74,10 +74,14 @@ class Stages(Enum):
 # Server State
 clients = []
 
+# Skip Feature
+break_sleep = False
+
 # do not mutate!
 START_STATE = {
     'games': [],
     'players': {},
+    'skip_set': set(),
     'current_stage': Stages.LOBBY.name,
     'current_vote': 0
 }
@@ -93,6 +97,19 @@ def get_state():
 
 def set_state(state):
     redis.set('state', json.dumps(state))
+
+
+def get_next_stage(stage_name):
+    if stage_name == Stages.LOBBY.name:
+        return Stages.MESSENGER.name
+    elif stage_name == Stages.MESSENGER.name:
+        return Stages.SCRAMBLER.name
+    elif stage_name == Stages.SCRAMBLER.name:
+        return Stages.VOTER.name
+    elif stage_name == Stages.VOTER.name:
+        return Stages.REVEALER.name
+    elif stage_name == Stages.REVEALER.name:
+        return Stages.VOTER.name
 
 
 def delete_client(client):
@@ -191,21 +208,29 @@ def reset_game():
 
 
 def start_game_timer():
+    global break_sleep
     state = get_state()
-    state['current_stage'] = Stages.MESSENGER.name
+    state['current_stage'] = get_next_stage(state['current_stage'])
 
     set_state(state)
     broadcast_state()
 
-    gevent.sleep(TIMES[state['current_stage']])
+    for i in range(TIMES[state['current_stage']]):
+        if break_sleep:
+            break
+        gevent.sleep(1)
 
     state = get_state()
-    state['current_stage'] = Stages.SCRAMBLER.name
+    state['current_stage'] = get_next_stage(state['current_stage'])
+    state['skip_set'] = set()
 
     set_state(state)
     broadcast_state()
 
-    gevent.sleep(TIMES[state['current_stage']])
+    for i in range(TIMES[state['current_stage']]):
+        if break_sleep:
+            break
+        gevent.sleep(1)
 
     state = get_state()
 
@@ -213,22 +238,31 @@ def start_game_timer():
 
     for game_id in games:
         state = get_state()
-        state['current_stage'] = Stages.VOTER.name
+        state['current_stage'] = get_next_stage(state['current_stage'])
+        state['skip_set'] = set(game_id['messenger_id'], game_id['scrambler_id'])
 
         set_state(state)
         broadcast_state()
 
-        gevent.sleep(TIMES[state['current_stage']])
+        for i in range(TIMES[state['current_stage']]):
+            if break_sleep:
+                break
+            gevent.sleep(1)
 
         state = get_state()
-        state['current_stage'] = Stages.REVEALER.name
+        state['current_stage'] = get_next_stage(state['current_stage'])
+        state['skip_set'] = set()
 
         set_state(state)
         broadcast_state()
 
-        gevent.sleep(TIMES[state['current_stage']])
+        for i in range(TIMES[state['current_stage']]):
+            if break_sleep:
+                break
+            gevent.sleep(1)
 
         state['current_vote'] = state['current_vote'] + 1
+
         set_state(state)
 
     reset_game()
@@ -256,6 +290,7 @@ def broadcast_state():
     players = state['players']
     current_stage = state['current_stage']
     current_vote = state['current_vote']
+    skip_set = state['skip_set']
 
     notify_all({
         'current_stage': current_stage,
@@ -263,11 +298,13 @@ def broadcast_state():
         'current_vote': current_vote,
         'type': 'state_update',
         'games': games,
-        'users': players
+        'users': players,
+        'skip_set': skip_set
     })
 
 
 def handle_message(client, data):
+    global break_sleep
     client_id = str(id(client))
     print(f'handle_message from {client_id} with data {data}')
 
@@ -356,6 +393,16 @@ def handle_message(client, data):
         game = games[state['current_vote']]
 
         game['votes'][client_id] = vote
+
+        set_state(state)
+        broadcast_state()
+
+    elif data['type'] == 'skip':
+        state = get_state()
+        state['skip_set'].add(client_id)
+
+        if len(state['skip_set']) >= len(players):
+            break_sleep = True
 
         set_state(state)
         broadcast_state()

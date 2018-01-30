@@ -30,6 +30,7 @@ class Voter extends Component {
       scrambledMessage,
       originalMessage,
       timerSeconds,
+      onSubmitSkip,
     } = this.props;
 
     const allowedToVote = !isMessenger && !isScrambler;
@@ -64,6 +65,7 @@ class Voter extends Component {
         )}
 
         <Clock timerSeconds={timerSeconds} />
+        <SkipButton onSubmitSkip={onSubmitSkip} />
       </div>
 
     );

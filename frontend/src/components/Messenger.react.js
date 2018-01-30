@@ -20,6 +20,7 @@ class Messenger extends Component {
           <p className="prompt"> {prompt} </p>
         <TextInput onSubmit={this.props.onSubmit}/>
         <Clock timerSeconds={this.props.timerSeconds} />
+        <SkipButton onSubmitSkip={this.props.onSubmitSkip} />
       </div>
     );
   }

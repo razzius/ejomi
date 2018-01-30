@@ -51,7 +51,7 @@ class Revealer extends Component {
       <p> {this.messenger_text} </p>
       <p> {this.scrambler_text} </p>
       <Clock timerSeconds={this.props.timerSeconds} />
-
+      <SkipButton onSubmitSkip={this.props.onSubmitSkip}/>
     </div>
 
     );
