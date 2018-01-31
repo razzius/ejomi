@@ -3,6 +3,7 @@ import EmojiBoard from './EmojiBoard.react';
 import ColorHash from '../color-hash';
 import RevealingMessage from './RevealingMessage.react';
 import Clock from './Clock.react';
+import SkipButton from './SkipButton.react';
 
 class Revealer extends Component {
 
@@ -51,7 +52,7 @@ class Revealer extends Component {
       <p> {this.messenger_text} </p>
       <p> {this.scrambler_text} </p>
       <Clock timerSeconds={this.props.timerSeconds} />
-
+      <SkipButton onSubmitSkip={this.props.onSubmitSkip}/>
     </div>
 
     );

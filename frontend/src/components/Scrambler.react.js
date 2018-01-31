@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Clock from './Clock.react';
 import EmojiBoard from './EmojiBoard.react';
 import TextInput from './TextInput.react';
+import SkipButton from './SkipButton.react'
 
 // props: message
 class Scrambler extends Component {
@@ -30,6 +31,7 @@ class Scrambler extends Component {
           </div>
         }
         <Clock timerSeconds={this.props.timerSeconds} />
+        <SkipButton onSubmitSkip={this.props.onSubmitSkip}/>
       </div>
     );
   }

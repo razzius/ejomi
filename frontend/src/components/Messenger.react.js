@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import EmojiBoard from './EmojiBoard.react';
 import TextInput from './TextInput.react';
 import Clock from './Clock.react';
-
+import SkipButton from './SkipButton.react';
 
 // props: emojis
 class Messenger extends Component {
@@ -20,6 +20,7 @@ class Messenger extends Component {
           {!this.props.isSpectator && <p className="prompt"> {prompt} </p> }
         {!this.props.isSpectator && <TextInput onSubmit={this.props.onSubmit}/> }
         <Clock timerSeconds={this.props.timerSeconds} />
+        <SkipButton onSubmitSkip={this.props.onSubmitSkip}>Skip</SkipButton>
       </div>
     );
   }

@@ -53,10 +53,10 @@ FAST_TIMES = {
 
 NORMAL_TIMES = {
     'LOBBY': -1,
-    'MESSENGER': 45,
-    'SCRAMBLER': 60,
-    'VOTER': 45,
-    'REVEALER': 25,
+    'MESSENGER': 50,
+    'SCRAMBLER': 90,
+    'VOTER': 50,
+    'REVEALER': 20,
 }
 
 TIMES = NORMAL_TIMES if 'FAST' not in os.environ else FAST_TIMES
@@ -73,6 +73,7 @@ class Stages(Enum):
 
 # Server State
 clients = []
+sleeper = None
 
 # do not mutate!
 START_STATE = {
@@ -93,6 +94,19 @@ def get_state():
 
 def set_state(state):
     redis.set('state', json.dumps(state))
+
+
+def get_next_stage(stage_name):
+    if stage_name == Stages.LOBBY.name:
+        return Stages.MESSENGER.name
+    elif stage_name == Stages.MESSENGER.name:
+        return Stages.SCRAMBLER.name
+    elif stage_name == Stages.SCRAMBLER.name:
+        return Stages.VOTER.name
+    elif stage_name == Stages.VOTER.name:
+        return Stages.REVEALER.name
+    elif stage_name == Stages.REVEALER.name:
+        return Stages.VOTER.name
 
 
 def delete_client(client):
@@ -170,6 +184,30 @@ def create_game(messenger_id, scrambler_id):
     }
 
 
+def is_all_skip(players):
+    """determines if everyone's skip is True"""
+    return all(
+        player_data['skip']
+        for player_data in players.values()
+    )
+
+
+# sets all skip to 0 unless specified
+def reset_skips(players, *ids_to_set_skip):
+    for player in players:
+        if player in ids_to_set_skip:
+            players[player]['skip'] = True
+        else:
+            players[player]['skip'] = False
+    return players
+
+
+def stop_sleep():
+    if sleeper:
+        sleeper.kill()
+        app.logger.info('Killed sleeper')
+
+
 # unused
 def send_hint_to_scrambler(client):
     """The client is the messenger for this round"""
@@ -191,21 +229,29 @@ def reset_game():
 
 
 def start_game_timer():
+    global sleeper
     state = get_state()
-    state['current_stage'] = Stages.MESSENGER.name
+    # Stage = MESSENGER
+    state['current_stage'] = get_next_stage(state['current_stage'])
+    state['players'] = reset_skips(state['players'])
 
     set_state(state)
     broadcast_state()
 
-    gevent.sleep(TIMES[state['current_stage']])
+    sleeper = gevent.spawn(gevent.sleep, TIMES[state['current_stage']])
+    sleeper.join()
 
     state = get_state()
-    state['current_stage'] = Stages.SCRAMBLER.name
+
+    # Stage = SCRAMBLER
+    state['current_stage'] = get_next_stage(state['current_stage'])
+    state['players'] = reset_skips(state['players'])
 
     set_state(state)
     broadcast_state()
 
-    gevent.sleep(TIMES[state['current_stage']])
+    sleeper = gevent.spawn(gevent.sleep, TIMES[state['current_stage']])
+    sleeper.join()
 
     state = get_state()
 
@@ -213,22 +259,35 @@ def start_game_timer():
 
     for game_id in games:
         state = get_state()
-        state['current_stage'] = Stages.VOTER.name
+        # Stage = VOTER
+        state['current_stage'] = get_next_stage(state['current_stage'])
+
+        # Initialize skip with messenger and scrambler true
+        state['players'] = reset_skips(
+            state['players'],
+            game_id['messenger_id'],
+            game_id['scrambler_id']
+        )
 
         set_state(state)
         broadcast_state()
 
-        gevent.sleep(TIMES[state['current_stage']])
+        sleeper = gevent.spawn(gevent.sleep, TIMES[state['current_stage']])
+        sleeper.join()
 
         state = get_state()
-        state['current_stage'] = Stages.REVEALER.name
+        # Stage = REVEALER
+        state['current_stage'] = get_next_stage(state['current_stage'])
+        state['players'] = reset_skips(state['players'])
 
         set_state(state)
         broadcast_state()
 
-        gevent.sleep(TIMES[state['current_stage']])
+        sleeper = gevent.spawn(gevent.sleep, TIMES[state['current_stage']])
+        sleeper.join()
 
         state['current_vote'] = state['current_vote'] + 1
+
         set_state(state)
 
     reset_game()
@@ -263,7 +322,7 @@ def broadcast_state():
         'current_vote': current_vote,
         'type': 'state_update',
         'games': games,
-        'users': players
+        'users': players,
     })
 
 
@@ -279,7 +338,8 @@ def handle_message(client, data):
 
         player = {
             'username': data['username'],
-            'score': 0
+            'score': 0,
+            'skip': False
         }
 
         players[client_id] = player
@@ -356,6 +416,18 @@ def handle_message(client, data):
         game = games[state['current_vote']]
 
         game['votes'][client_id] = vote
+
+        set_state(state)
+        broadcast_state()
+
+    elif data['type'] == 'skip':
+        state = get_state()
+        players = state['players']
+        players[client_id]['skip'] = True
+
+        if is_all_skip(players):
+            app.logger.info('All players voted to skip')
+            stop_sleep()
 
         set_state(state)
         broadcast_state()

@@ -139,6 +139,12 @@ class App extends Component {
     });
   }
 
+  _onSubmitSkip = () => {
+    this._sendMessage({
+      type: 'skip',
+    });
+  }
+
   // override this to mock state
   _getState = () => {
     if (SHOULD_MOCK_STATE) {
@@ -199,6 +205,7 @@ class App extends Component {
         <Messenger
           emojiList={game.emoji_board}
           onSubmit={this._onSubmitHint}
+          onSubmitSkip={this._onSubmitSkip}
           goalEmojiIndex={game.goal_index}
           timerSeconds={times[currentStage]}
           characterLimit={10}
@@ -210,6 +217,7 @@ class App extends Component {
         <Scrambler
           emojiList={game.emoji_board}
           onSubmit={this._onSubmitScrambledHint}
+          onSubmitSkip={this._onSubmitSkip}
           message={game.message}
           timerSeconds={times[currentStage]}
           isSpectator={isSpectator}
@@ -223,6 +231,7 @@ class App extends Component {
           isSpectator={isSpectator}
           emojiList={game.emoji_board}
           onSubmit={this._onSubmitVote}
+          onSubmitSkip={this._onSubmitSkip}
           scrambledMessage={game.scrambled_message}
           originalMessage={game.message}
           timerSeconds={times[currentStage]}
@@ -237,6 +246,7 @@ class App extends Component {
           originalMessage={game.message}
           scrambledMessage={game.scrambled_message}
           timerSeconds={times[currentStage]}
+          onSubmitSkip={this._onSubmitSkip}
           votes={game.votes}
           users={this._getState().users}
           messenger_id={game.messenger_id}
