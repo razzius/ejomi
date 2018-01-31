@@ -1,20 +1,23 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 
-// props: referenceString, onSubmit: string -> void
 class SkipButton extends Component {
-
   constructor(props) {
-    super(props);
+    super(props)
+    this.state = {skipped: false}
+  }
 
+  skip() {
+    this.setState({skipped: true})
+    this.props.onSubmitSkip()
   }
 
   render() {
-
     return (
-      <button onClick={this.props.onSubmitSkip}>
-          Done
+      !this.state.skipped &&
+      <button onClick={this.skip.bind(this)}>
+        Done
       </button>
-    );
+    )
   }
 }
 

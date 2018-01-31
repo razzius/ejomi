@@ -18,10 +18,10 @@ class EmojiHaiku extends Component {
     const emojiWords = this.state.haiku.map(line => line.map(e => e.name.replace(/_/g,' ')).join(' '))
     let haikuHTML = [];
     for (var i = 0; i < 3; i++) {
-        haikuHTML.push(<div class="haiku-line">
-          <div class="emoji-line"> {emojiLines[i]}
+        haikuHTML.push(<div className="haiku-line">
+          <div className="emoji-line"> {emojiLines[i]}
           </div>
-        <div class="text-line"><i>{emojiWords[i]}
+        <div className="text-line"><i>{emojiWords[i]}
         </i></div>
       </div>);
     }

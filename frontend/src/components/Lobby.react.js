@@ -60,7 +60,7 @@ class Lobby extends Component {
         <EmojiHaiku/>
         {inputForm}
         {startButton}
-        <h5 className="playerMessage">{playerMessage} </h5>
+        <h5 className="playerMessage">{playerMessage}</h5>
         <div className="userList" >
             {this.props.userList.sort((name) => { return name === this.state.currentUser ? -1: 1;})
             .map(this._renderName)}
