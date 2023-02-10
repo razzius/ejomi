@@ -29,7 +29,7 @@ dictConfig({
     }
 })
 
-REDIS_URL = os.environ.get('REDIS_URL', 'localhost:6371')
+REDIS_URL = os.environ.get('REDIS_URL', '')
 REDIS_CHAN = 'emoji'
 
 app = Flask(
